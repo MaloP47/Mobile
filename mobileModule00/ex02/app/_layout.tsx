@@ -6,6 +6,6 @@ export const unstable_settings = {
 };
 
 const RootLayout = () => {
-  return <Stack initialRouteName='index' screenOptions={{ headerShown: false}} />;
+  return <Stack initialRouteName='index' />;
 }
 export default RootLayout;

@@ -6,6 +6,6 @@ export const unstable_settings = {
 };
 
 const RootLayout = () => {
-  return <Stack initialRouteName='exOne' options={{ headerShown: false}} />;
+  return <Stack initialRouteName='exOne' screenOptions={{ headerShown: false}} />;
 }
 export default RootLayout;

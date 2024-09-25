@@ -1,17 +1,16 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
 
 export default function exOne() {
 
 	const HelloRouter = useRouter();
 
 	useEffect(() => {
-		console.log("screen2: HelloWorld loaded");
+		console.log("screen2:  loaded");
 	  }, []);
 
 	const handleClick = () => {
-		HelloRouter.push('/exOne');
+		OneRouter.push('/HelloWorld');
 	  };
 
   return (
@@ -20,7 +19,7 @@ export default function exOne() {
       <TouchableOpacity
 	  	className='bg-white py-2 px-4 rounded-full shadow-2xl mt-2'
 		style={styles.shadow}
-	  	onPress={ handleClick }
+	  	onPress={ () => HelloRouter.push('/exOne')}
 		>
         <Text className='text-lime-800/50 rounded-full'>Click me</Text>
       </TouchableOpacity>

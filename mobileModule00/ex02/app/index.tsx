@@ -1,42 +1,78 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useState } from 'react';
+import calcButton from './components/calcButton';
+import CalcButton from './components/calcButton';
 
-export default function exOne() {
+export default function index() {
 
-	const [text, setText] = useState('A simple text')
+	const [input, setInput] = useState('');
 
-	const handleClick = () => {
-		if (text === "A simple text") {
-			setText('Hello World!')
-		}
-		else {
-			setText("A simple text")
-		}
-	  };
+	const handleClick = (buttonValue) => {
+		console.log("button pressed :" + buttonValue);
+	};
 
-  return (
-    <View className='flex-1 justify-center items-center bg-white'>
-      <Text className='text-3xl bg-lime-800/75 rounded-lg'>{text}</Text>
-      <TouchableOpacity
-	  	className='bg-white py-2 px-4 rounded-full shadow-2xl mt-2'
-		style={styles.shadow}
-	  	onPress={ handleClick }
-		>
-        <Text className='text-lime-800/50 rounded-full'>Click me</Text>
-      </TouchableOpacity>
-    </View>
-  );
+	return (
+		<View className='flex-1 justify-center items-center bg-white'>
+			<View>
+				<Text>Result:0</Text>
+			</View>
+			<View>
+				<Text>{input}</Text>
+			</View>
+			<View>
+				<CalcButton title='0' onPress={handleClick} />
+				<CalcButton title='00' onPress={handleClick} />
+				<CalcButton title='1' onPress={handleClick} />
+				<CalcButton title='2' onPress={handleClick} />
+				<CalcButton title='3' onPress={handleClick} />
+				<CalcButton title='4' onPress={handleClick} />
+				<CalcButton title='5' onPress={handleClick} />
+				<CalcButton title='6' onPress={handleClick} />
+				<CalcButton title='7' onPress={handleClick} />
+				<CalcButton title='8' onPress={handleClick} />
+				<CalcButton title='9' onPress={handleClick} />
+				<CalcButton title='.' onPress={handleClick} />
+				<CalcButton title='blank' onPress={handleClick} />
+
+
+				<CalcButton title='C' onPress={handleClick} type='clear' />
+				<CalcButton title='AC' onPress={handleClick} type='clear'/>
+
+				<CalcButton title='+' onPress={handleClick} type='operator' />
+				<CalcButton title='-' onPress={handleClick} type='operator' />
+				<CalcButton title='*' onPress={handleClick} type='operator' />
+				<CalcButton title='/' onPress={handleClick} type='operator' />
+
+				<CalcButton title='=' onPress={handleClick} type='equal' />
+
+			</View>
+			
+		</View>
+	)
 }
 
 const styles = StyleSheet.create({
-	shadow: {
-		shadowColor: "#000000",
-		shadowOffset: {
-			width: 0,
-			height: 18,
-		},
-		shadowOpacity:  0.25,
-		shadowRadius: 20.00,
-		elevation: 4,
-	}
-})
+	container: {
+	  flex: 1,
+	  backgroundColor: '#fff',
+	  justifyContent: 'center',
+	},
+	display: {
+	  flex: 1,
+	  backgroundColor: '#000',
+	  justifyContent: 'flex-end',
+	  alignItems: 'flex-end',
+	  padding: 20,
+	},
+	displayText: {
+	  fontSize: 48,
+	  color: '#fff',
+	},
+	buttonsContainer: {
+	  flex: 2,
+	  flexDirection: 'row',
+	  flexWrap: 'wrap',
+	  padding: 10,
+	  backgroundColor: '#d3d3d3',
+	},
+  });

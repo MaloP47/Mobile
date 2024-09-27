@@ -1,16 +1,54 @@
-import React, { useState } from "react";
-import { Button, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import React, { useState, useEffect } from "react";
+import {SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { Appbar } from 'react-native-paper';
 import CalcButton from "./components/CalcButton";
 import Row from "./components/Row";
+import * as ScreenOrientation from 'expo-screen-orientation';
 
 export default function index() {
 
 	const [input, setInput] = useState('');
+	const [isLandscape, setIsLandscape] = useState(false);
+
+	useEffect(() => {
+
+		ScreenOrientation.unlockAsync();
+	
+		const getInitialOrientation = async () => {
+		  const orientation = await ScreenOrientation.getOrientationAsync();
+		  if (
+			orientation === ScreenOrientation.Orientation.LANDSCAPE_LEFT ||
+			orientation === ScreenOrientation.Orientation.LANDSCAPE_RIGHT
+		  ) {
+			setIsLandscape(true);
+		  } else {
+			setIsLandscape(false);
+		  }
+		};
+	
+		getInitialOrientation();
+	
+		const subscription = ScreenOrientation.addOrientationChangeListener((event) => {
+		  const orientation = event.orientationInfo.orientation;
+		  if (
+			orientation === ScreenOrientation.Orientation.LANDSCAPE_LEFT ||
+			orientation === ScreenOrientation.Orientation.LANDSCAPE_RIGHT
+		  ) {
+			setIsLandscape(true);
+		  } else {
+			setIsLandscape(false);
+		  }
+		});
+	
+		return () => {
+		  ScreenOrientation.removeOrientationChangeListener(subscription);
+		};
+	  }, []);
 
 	const handleClick = (buttonValue) => {
 		console.log("button pressed : " + buttonValue);
 
-		if (buttonValue === "C" || input.length > 10) {
+		if (buttonValue === "C" || input.length > 20) {
 		  setInput('')
 		} else {
 		  setInput(input + buttonValue)
@@ -19,7 +57,10 @@ export default function index() {
 
 	return (
 		<View style={styles.container}>
-			<SafeAreaView>
+			<Appbar.Header style={styles.appBar}>
+				<Appbar.Content title="Calculator" titleStyle={styles.appBarTitle} />
+			</Appbar.Header>
+			<View style={styles.numPad}>
 				<Text style={styles.result}>0</Text>
 				<Text style={styles.input}>{input || '0'}</Text>
 
@@ -27,7 +68,7 @@ export default function index() {
 					<CalcButton text="7" onPress={handleClick} />
 					<CalcButton text="8" onPress={handleClick} />
 					<CalcButton text="9" onPress={handleClick} />
-					<CalcButton text="C" onPress={handleClick} />
+					<CalcButton text="C" onPress={handleClick} theme="secondary" />
 					<CalcButton text="AC" onPress={handleClick} />
 				</Row>
 				<Row>
@@ -51,7 +92,7 @@ export default function index() {
 					<CalcButton text="=" onPress={handleClick} />
 					<CalcButton text=" " onPress={handleClick} />
 				</Row>
-			</SafeAreaView>
+			</View>
 		</View>
 	)
 };
@@ -60,7 +101,6 @@ const styles = StyleSheet.create({
 	container: {
 	  flex: 1,
 	  backgroundColor: "#202020",
-	  justifyContent: "flex-end",
 	},
 	input: {
 	  color: "#fff",
@@ -76,4 +116,16 @@ const styles = StyleSheet.create({
 		marginRight: 20,
 		marginBottom: 10,
 	  },
+	appBar: {
+		// flex: 1,
+		backgroundColor: "yellow"
+	},
+	appBarTitle: {
+		textDecorationColor: "white",
+		backgroundColor: "blue",
+	},
+	numPad:{
+		flex: 1,
+		justifyContent: 'flex-end',
+	}
   });

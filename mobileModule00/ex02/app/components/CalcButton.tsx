@@ -26,20 +26,21 @@ const buttonWidth = screen.width / 4;
 
 const styles = StyleSheet.create({
 	button: {
-		backgroundColor: "#333333",
+		backgroundColor: "white",
 		flex: 1,
-		height: Math.floor(buttonWidth - 10),
+		// height: Math.floor(buttonWidth - 10),
 		alignItems: "center",
 		justifyContent: "center",
-		borderRadius: Math.floor(buttonWidth),
-		margin: 5,
+		// borderRadius: Math.floor(buttonWidth),
+		// margin: 1,
+		// borderBlockColor: 'yellow'
 	},
 	text: {
-		color: "#fff",
+		color: "black",
 		fontSize: 24,
 	},
 	textSecondary: {
-		color: "#060606"
+		color: "red"
 	},
 	buttonDouble: {
 		width: screen.width / 2 - 10,
@@ -48,6 +49,7 @@ const styles = StyleSheet.create({
 		paddingLeft: 40,
 	},
 	buttonSecondary: {
+		color: "red",
 		backgroundColor: "#a6a6a6"
 	},
 	buttonAccent: {

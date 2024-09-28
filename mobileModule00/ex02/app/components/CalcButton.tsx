@@ -1,21 +1,17 @@
 import { Dimensions, StyleSheet, Text, TouchableOpacity } from "react-native";
 
-export default ({ onPress, text, size, theme }) => {
+export default ({ onPress, text, theme, disabled = false }) => {
 	const buttonStyles = [styles.button];
 	const textStyles = [styles.text];
 
-	if (size === "double") {
-		buttonStyles.push(styles.buttonDouble);
-	}
-
 	if (theme === "secondary") {
-		buttonStyles.push(styles.buttonSecondary);
-	} else if (theme === "accent") {
-		buttonStyles.push(styles.buttonAccent);
+		textStyles.push(styles.textSecondary);
+	} else if (theme === "operator") {
+		textStyles.push(styles.textOperator);
 	}
 
 	return (
-		<TouchableOpacity onPress={() => onPress(text)} style={buttonStyles}>
+		<TouchableOpacity onPress={!disabled ? () => onPress(text) : null} style={buttonStyles}>
 			<Text style={textStyles}>{text}</Text>
 		</TouchableOpacity>
 	)
@@ -26,33 +22,19 @@ const buttonWidth = screen.width / 4;
 
 const styles = StyleSheet.create({
 	button: {
-		backgroundColor: "white",
+		backgroundColor: "#a5a2a2",
 		flex: 1,
-		// height: Math.floor(buttonWidth - 10),
 		alignItems: "center",
 		justifyContent: "center",
-		// borderRadius: Math.floor(buttonWidth),
-		// margin: 1,
-		// borderBlockColor: 'yellow'
 	},
 	text: {
 		color: "black",
 		fontSize: 24,
 	},
 	textSecondary: {
-		color: "red"
-	},
-	buttonDouble: {
-		width: screen.width / 2 - 10,
-		flex: 0,
-		alignItems: "flex-start",
-		paddingLeft: 40,
-	},
-	buttonSecondary: {
 		color: "red",
-		backgroundColor: "#a6a6a6"
 	},
-	buttonAccent: {
-		backgroundColor: "#ffc107"
-	},
+	textOperator: {
+        color: "white",
+    },
 });

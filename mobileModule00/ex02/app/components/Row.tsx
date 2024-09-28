@@ -6,7 +6,9 @@ const Row = ({ children }) => {
 
 const styles = StyleSheet.create({
 	container: {
+		flex: 3,
 		flexDirection: "row",
+		height: 20,
 	}
 });
 

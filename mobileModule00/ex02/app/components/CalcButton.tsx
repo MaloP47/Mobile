@@ -1,6 +1,15 @@
 import { Dimensions, StyleSheet, Text, TouchableOpacity } from "react-native";
 
-export default ({ onPress, text, theme, disabled = false }) => {
+import { FC } from "react";
+
+interface CalcButtonProps {
+	onPress: (text: string) => void;
+	text: string;
+	theme?: "secondary" | "operator" | "default";
+	disabled?: boolean;
+}
+
+const CalcButton: FC<CalcButtonProps> = ({ onPress, text, theme, disabled = false }) => {
 	const buttonStyles = [styles.button];
 	const textStyles = [styles.text];
 
@@ -11,7 +20,7 @@ export default ({ onPress, text, theme, disabled = false }) => {
 	}
 
 	return (
-		<TouchableOpacity onPress={!disabled ? () => onPress(text) : null} style={buttonStyles}>
+		<TouchableOpacity disabled={disabled} onPress={!disabled ? () => onPress(text) : null} style={buttonStyles}>
 			<Text style={textStyles}>{text}</Text>
 		</TouchableOpacity>
 	)
@@ -38,3 +47,5 @@ const styles = StyleSheet.create({
         color: "white",
     },
 });
+
+export default CalcButton;

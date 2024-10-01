@@ -68,15 +68,15 @@ export default function Calculator() {
 
 	};
 
-	return (
+	return (		
 		<View style={styles.container}>
 			<StatusBar
-				style={Platform.OS === 'ios' ? 'dark' : 'light'}
-				backgroundColor={Platform.OS === 'ios' ? '#fff' : '#444141'}
+				style={'light'}
+				backgroundColor={'#444141'}
 				hidden={false}
-				/>
-			<View className="flex-2 bg-[#a5a2a2]">
-				<Text className="text-center text-white font-bold text-2xl">Calculator</Text>
+				></StatusBar>
+			<View className="flex-2 justify-center bg-[#a5a2a2] h-[50]">
+				<Text className="text-center text-white font-bold text-3xl">Calculator</Text>
 			</View>
 			<View className="flex-1 bg-[#444141]">
 				<Text style={styles.input}>{input || '0'}</Text>
@@ -123,14 +123,14 @@ const styles = StyleSheet.create({
 	},
 	result: {
 		color: "#fff",
-		fontSize: 30,
+		fontSize: 50,
 		textAlign: "right",
 		marginRight: 10,
 		// marginBottom: 10,
 	},
 	input: {
 		color: "#fff",
-		fontSize: 30,
+		fontSize: 50,
 		textAlign: "right",
 		marginRight: 10,
 		marginBottom: 10,

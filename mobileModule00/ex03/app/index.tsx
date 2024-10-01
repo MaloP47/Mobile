@@ -4,7 +4,6 @@ import CalcButton from "./components/CalcButton";
 import Row from "./components/Row";
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { StatusBar } from "expo-status-bar";
-import { calc } from "./utils/calculator_proj"
 
 export default function Calculator() {
 
@@ -49,24 +48,60 @@ export default function Calculator() {
 
 	const handleClick = (buttonValue: string) => {
 		console.log("button pressed : " + buttonValue);
-
+	  
 		if (buttonValue === "AC" || input.length > 12) {
-			setInput('');
-			setResult('');
+		  setInput('');
+		  setResult('');
 		} else if (buttonValue === "C") {
-			setInput(input.slice(0, -1));
+		  setInput(input.slice(0, -1));
 		} else if (buttonValue === "=") {
-			setResult('');
-			try {
-				setResult(eval(input));
-			} catch (error) {
-				setResult('Wrong format');
-			};
+		  setResult('');
+		  try {
+			const evalResult = eval(input);
+			if (evalResult === Infinity || evalResult === -Infinity) {
+			  setResult('Division par 0');
+			} else {
+			  setResult(evalResult.toString());
+			}
+		  } catch (error) {
+			setResult('Wrong format');
+		  }
 		} else {
-		  setInput(input + buttonValue)
+		  if (buttonValue === '.') {
+			// Gestion du point décimal
+			const tokens = input.split(/[\+\-\*\/]/);
+			const lastToken = tokens[tokens.length - 1];
+			if (lastToken.includes('.')) {
+			  // Le dernier nombre contient déjà un point
+			  return;
+			} else {
+			  setInput(input + buttonValue);
+			}
+		  } else if (buttonValue === '-') {
+			// Gestion du signe moins pour les nombres négatifs ou l'opérateur de soustraction
+			const lastChar = input[input.length - 1];
+			if (input === '' || ['+', '-', '*', '/'].includes(lastChar)) {
+			  // Permettre '-' après un opérateur ou au début pour indiquer un nombre négatif
+			  setInput(input + buttonValue);
+			} else {
+			  setInput(input + buttonValue);
+			}
+		  } else if (['+', '*', '/'].includes(buttonValue)) {
+			// Gestion des autres opérateurs
+			const lastChar = input[input.length - 1];
+			if (['+', '-', '*', '/'].includes(lastChar)) {
+			  // Remplacer le dernier opérateur par le nouveau
+			  setInput(input.slice(0, -1) + buttonValue);
+			} else {
+			  setInput(input + buttonValue);
+			}
+		  } else {
+			// Gestion des chiffres
+			setInput(input + buttonValue);
+		  }
 		}
-
-	};
+	  };
+	  
 
 	return (		
 		<View style={styles.container}>

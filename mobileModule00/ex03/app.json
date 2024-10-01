@@ -22,11 +22,11 @@
         "backgroundColor": "#1e29a5"
       }
     },
-	"androidStatusBar" : {
+	  "androidStatusBar" : {
 		"backgroundColor": "#a51e1e",
 		"translucent": false,
 		"barStyle": "dark-content"
-	},
+	  },
     "web": {
       "bundler": "metro",
       "output": "static",

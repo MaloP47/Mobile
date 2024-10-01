@@ -68,8 +68,7 @@ export default function Calculator() {
 
 	};
 
-	return (
-		
+	return (		
 		<View style={styles.container}>
 			<StatusBar
 				style={'light'}

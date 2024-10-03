@@ -1,48 +1,69 @@
-import * as React from 'react';
-import { Text, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React, { useEffect, useState } from 'react';
+import { View, useWindowDimensions, Text, StyleSheet } from 'react-native';
+import { TabView, SceneMap, TabBar, SceneRendererProps, NavigationState } from 'react-native-tab-view';
+import Currently from './components/Currently';
+import Today from './components/Today';
+import Weekly from './components/Weekly';
+import useOrientation from './customHooks/orientationScreen';
 
-function Currently() {
+import Ionicons from '@expo/vector-icons/Ionicons';
+
+{/* <Ionicons name="sunny-outline" size={24} color="black" /> */}
+{/* <Ionicons name="today-outline" size={24} color="black" /> */}
+{/* <Ionicons name="calendar-outline" size={24} color="black" /> */}
+
+const renderScene = SceneMap({
+	first: Currently,
+	second: Today,
+	third: Weekly
+});
+
+interface Route {
+	key: string;
+	title: string;
+	icon: string;
+}
+  
+
+export default function app() {
+
+	const layout = useWindowDimensions();
+	const orientation = useOrientation();
+
+	const [index, setIndex] = useState(0);
+	const [routes] = useState<Route[]>([
+		{ key: 'first', title: 'Currently', icon: "sunny-outline" },
+		{ key: 'second', title: 'Today', icon: "today-outline" },
+		{ key: 'third', title: 'Weekly', icon: "calendar-outline" },
+	]);
+
+  const renderTab = (props: SceneRendererProps & { navigationState: NavigationState<Route> }) => (
+    <TabBar {...props}
+		renderIcon={({route}) => (
+			<Ionicons name={route.icon} size={24} color="black" />
+		)}
+		renderLabel={({route, focused }) => (
+			<Text style={{color: "black", textTransform: "none" }} >{route.title}</Text>
+		)}
+		indicatorStyle={{ backgroundColor: 'grey', height: 5}}
+		style={styles.barTab}
+	/>
+  );
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Currently</Text>
-    </View>
+    <TabView
+      navigationState={{ index, routes }}
+      renderScene={renderScene}
+      onIndexChange={setIndex}
+      initialLayout={{ width: layout.width }}
+	  tabBarPosition='bottom'
+	  renderTabBar={renderTab}
+    />
   );
 }
 
-function Today() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Today</Text>
-    </View>
-  );
-}
-
-function Weekly() {
-	return (
-	  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-		<Text>Weekly</Text>
-	  </View>
-	);
-  }
-
-const Tabs = createBottomTabNavigator();
-
-function BottomBar() {
-  return (
-    <Tabs.Navigator>
-      <Tabs.Screen name="Currently" component={Currently} />
-      <Tabs.Screen name="Today" component={Today} />
-	  <Tabs.Screen name="Weekly" component={Weekly} />
-    </Tabs.Navigator>
-  );
-}
-
-export default function App() {
-  return (
-    <NavigationContainer  independent={true} >
-      <BottomBar />
-    </NavigationContainer>
-  );
-}
+const styles = StyleSheet.create({
+	barTab: {
+		backgroundColor: 'white',
+	},
+});

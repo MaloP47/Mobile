@@ -1,14 +1,18 @@
 import { Text, StyleSheet, View } from 'react-native'
-import React, { Component } from 'react'
+import React from 'react'
 
-export default class Weekly extends Component {
-	render() {
-		return (
-			<View style={styles.container}>
-				<Text style={styles.screenTitle}>Weekly</Text>
-			</View>
-	)
-  }
+interface CurrentlyProps {
+  searchText?: string;
+}
+
+export default function Weekly({ searchText }: CurrentlyProps) {
+	return (
+		<View style={styles.container}>
+			<Text style={styles.screenTitle}>
+				Weekly{searchText ? '\n' + searchText : ''}
+			</Text>
+		</View>
+	);
 }
 
 const styles = StyleSheet.create({
@@ -19,5 +23,6 @@ const styles = StyleSheet.create({
 	},
 	screenTitle: {
 	  fontSize: 32,
+	  textAlign: 'center',
 	},
 });

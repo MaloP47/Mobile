@@ -1,15 +1,19 @@
 import { Text, StyleSheet, View } from 'react-native'
-import React, { Component } from 'react'
+import React from 'react'
 
-export default class Today extends Component {
-	render() {
-		return (
-			<View style={styles.container}>
-				<Text style={styles.screenTitle}>Today</Text>
-			</View>
-	)
-  }
-};
+interface CurrentlyProps {
+  searchText?: string;
+}
+
+export default function Today({ searchText }: CurrentlyProps) {
+	return (
+		<View style={styles.container}>
+			<Text style={styles.screenTitle}>
+				Today{searchText ? '\n' + searchText : ''}
+			</Text>
+		</View>
+	);
+}
 
 const styles = StyleSheet.create({
 	container: {
@@ -19,5 +23,6 @@ const styles = StyleSheet.create({
 	},
 	screenTitle: {
 	  fontSize: 32,
+	  textAlign: 'center',
 	},
 });

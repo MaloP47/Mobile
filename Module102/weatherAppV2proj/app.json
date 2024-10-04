@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "weatherAppV2proj",
+    "slug": "weatherAppV2proj",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/images/icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+		"bundleIdentifier": "com.42.weatherAppV2proj",
+    	"supportsTablet": true,
+		"requireFullScreen": true,
+		"infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Localisation pour les conditions météo"
+      }
+    },
+    "android": {
+		"package": "com.42.weatherAppV2proj",
+    	"adaptiveIcon": {
+        	"foregroundImage": "./assets/images/adaptive-icon.png",
+        	"backgroundColor": "#ffffff"
+      	},
+		"permissions": [
+        	"ACCESS_COARSE_LOCATION",
+       		"ACCESS_FINE_LOCATION"
+      	]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+	  [
+		"expo-screen-orientation",
+		{
+			 "initialOrientation": "DEFAULT"
+		}
+	  ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

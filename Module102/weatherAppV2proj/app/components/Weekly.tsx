@@ -7,10 +7,10 @@ interface CurrentlyProps {
 
 const TTWS = [
 	{ date: '2024-01-01', min: '5°C', max: '15°C', weather: 'Sunny' },
-	{ date: '2024-01-01', min: '6°C', max: '16°C', weather: 'Cloudy' },
-	{ date: '2024-01-01', min: '8°C', max: '18°C', weather: 'Rainy' },
-	{ date: '2024-01-01', min: '10°C', max: '20°C', weather: 'Sunny' },
-	{ date: '2024-01-01', min: '12°C', max: '22°C', weather: 'Partly Cloudy' },
+	{ date: '2024-01-02', min: '6°C', max: '16°C', weather: 'Cloudy' },
+	{ date: '2024-01-03', min: '8°C', max: '18°C', weather: 'Rainy' },
+	{ date: '2024-01-04', min: '10°C', max: '20°C', weather: 'Sunny' },
+	{ date: '2024-01-05', min: '12°C', max: '22°C', weather: 'Partly Cloudy' },
 ];
 
 export default function Weekly({ searchText }: CurrentlyProps) { // Change prop
@@ -19,8 +19,8 @@ export default function Weekly({ searchText }: CurrentlyProps) { // Change prop
 			<Text style={styles.location}>Paris</Text>
 			<Text style={styles.region}>Ile de France</Text>
 			<Text style={styles.country}>France</Text>
-			<FlatList
-				data={TTWS} // Change that
+			<FlatList // Need to change the way list is displayed
+				data={TTWS} // Change props
 				keyExtractor={(item, index) => index.toString()}
 				renderItem={({ item }) =>
 					<View style={styles.list}>

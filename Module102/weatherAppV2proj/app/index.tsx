@@ -17,6 +17,7 @@ import { LocationObject } from 'expo-location';
 import useOrientation from './customHooks/orientationScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useDebounce } from 'use-debounce'
+import { toHumanLoc } from './utils/reverseFromCoordinates';
 
 interface Route {
 	key: string;
@@ -177,7 +178,14 @@ export default function app() {
 					// onPress={() => {
 					// 	setSearchText('Geolocation');
 					//   }}
-					onPress={iconLoc}
+					// onPress={iconLoc}
+					onPress={async () => {
+						const locH = await toHumanLoc(2.257679, 48.8436083);
+						if (locH && locH.address) {
+							const { city, state, country } = locH.address;
+							console.log(`${city}, ${state}, ${country}`);
+						}
+					}}
 				/>
 			</View>
 			<TabView

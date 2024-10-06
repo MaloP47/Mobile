@@ -8,9 +8,12 @@ interface CurrentlyProps {
 export default function Currently({ searchText }: CurrentlyProps) {
 	return (
 		<View style={styles.container}>
-			<Text style={styles.screenTitle}>
-				Currently{searchText ? '\n' + searchText : ''}
-			</Text>
+			<Text style={styles.location}>Paris</Text>
+			<Text style={styles.region}>Ile de France</Text>
+			<Text style={styles.country}>France</Text>
+			<Text style={styles.temperature}>21°C</Text>
+			<Text style={styles.weatherDescription}>Sunny</Text>
+			<Text style={styles.windSpeed}>30km/h</Text>
 		</View>
 	);
 }
@@ -21,8 +24,23 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center"
 	},
-	screenTitle: {
-	  fontSize: 32,
-	  textAlign: 'center',
+	location: {
+		fontSize: 32,
+		textAlign: 'center',
+	},
+	region: {
+
+	},
+	country: {
+
+	},
+	temperature: {
+
+	},
+	weatherDescription: {
+
+	},
+	windSpeed: {
+
 	},
 });

@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, useWindowDimensions, Text, StyleSheet, TextInput } from 'react-native';
+import {
+	View,
+	useWindowDimensions,
+	Text,
+	StyleSheet,
+	TextInput,
+	FlatList,
+	TouchableOpacity
+} from 'react-native';
 import { TabView, TabBar, SceneRendererProps, NavigationState } from 'react-native-tab-view';
 import Currently from './components/Currently';
 import Today from './components/Today';
@@ -8,6 +16,7 @@ import handleGeoLocation from './utils/geolocation';
 import { LocationObject } from 'expo-location';
 import useOrientation from './customHooks/orientationScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useDebounce } from 'use-debounce'
 
 interface Route {
 	key: string;
@@ -28,6 +37,33 @@ export default function app() {
 	const [index, setIndex] = useState<number>(0);
 	const [searchText, setSearchText] = useState<string>('');
 	const [location, setLocation] = useState<LocationObject | null>(null);
+	const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
+	const [debouncedSearchText] = useDebounce(searchText, 500);
+
+	const fetchCity = async (query: string) => {
+		if (query.length < 3) {
+			setCitySuggestions([]);
+			return;
+		}
+		try {
+			const response = await fetch(
+				`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=fr`
+			);
+			const data = await response.json();
+			if (data && data.results) {
+				setCitySuggestions(data.results);
+			} else {
+				setCitySuggestions([]);
+			}
+		} catch (error) {
+			console.log("Error fetching geo API " + error);
+			setCitySuggestions([]);
+		}
+	}
+
+	useEffect(() => {
+		fetchCity(debouncedSearchText);
+	}, [debouncedSearchText]);
 
 	useEffect(() => {
 		const reqLocation = async () => {
@@ -45,9 +81,11 @@ export default function app() {
 		const loc = await handleGeoLocation();
 		if (loc) {
 			setLocation(loc);
-			console.log('coucou');
 			console.log(loc);
-			setSearchText(`Latitude: ${loc.coords.latitude}, Longitude: ${loc.coords.longitude}`);
+			if ('city' in loc && 'country' in loc) {
+				setSearchText(`${loc.city}, ${loc.country}`);
+				console.log(searchText);
+			}
 		} else {
 			console.log('Icon not working')
 		}
@@ -68,10 +106,10 @@ export default function app() {
 
   	const renderTab = (props: SceneRendererProps & { navigationState: NavigationState<Route> }) => (
     	<TabBar {...props}
-			renderIcon={({route}) => (
+			renderIcon={({ route }) => (
 				<Ionicons name={route.icon as any} size={24} color="black" />
 			)}
-			renderLabel={({route, focused }) => (
+			renderLabel={({ route, focused }) => (
 				<Text style={styles.label} numberOfLines={2} >{route.title}</Text>
 			)}
 			indicatorStyle={{ backgroundColor: 'grey', height: 5}}
@@ -88,18 +126,50 @@ export default function app() {
 					color="black"
 					onPress={() => {
 						console.log('search pressed');
-					  }}
+					  }} // gérer ça
 				/>
 				<TextInput
 					style={styles.searchInput}
 					cursorColor='black'
+					selectionColor={"black"}
+					autoComplete='country'
 					placeholder='Search location...'
 					maxLength={30}
 					value={searchText}
-					// onChangeText={(text) => {
-					// 	setSearchText(text);
-					//   }}
+					onChangeText={(text) => {
+						setSearchText(text);
+					}}
+					onSubmitEditing={() => {
+						setSearchText('');
+						setCitySuggestions([]);
+					}}
+					onBlur={() => {
+						setCitySuggestions([]);
+					}}
 				/>
+				{citySuggestions.length > 0 && (
+					<View style={styles.citySugg}>
+						<FlatList
+							data={citySuggestions}
+							keyExtractor={(item) => item.id.toString()}
+							renderItem={({ item }) => (
+								<TouchableOpacity
+									style={styles.itemSugg}
+									onPress={() => {
+										console.log("Touch sugg");
+										setSearchText(`${item.name}, ${item.country}`);
+										setCitySuggestions([]);
+									}}
+								>
+									<Text style={styles.textSugg}>
+										{item.name}, {item.admin1 ? item.admin1 + ', ' : ''}
+										{item.country}
+									</Text>
+								</TouchableOpacity>
+							)}
+						/>
+					</View>
+				)}
 				<Text style={{fontSize: 24, lineHeight: 20}}>|  </Text>
 				<Ionicons
 					name="location-outline"
@@ -143,5 +213,25 @@ const styles = StyleSheet.create({
 		textTransform: 'none',
 		textAlign: 'center',
 		flexWrap: 'wrap',
+	},
+	citySugg: {
+		backgroundColor: 'white',
+		position: 'absolute',
+		top: 40,
+		left: 0,
+		right: 0,
+		zIndex: 1,
+		maxHeight: 200,
+		borderColor: '#ccc',
+		borderWidth: 1,
+	},
+	itemSugg: {
+		padding: 10,
+		borderBottomColor: '#ccc',
+		borderBottomWidth: 1,
+		backgroundColor: 'pink',
+	},
+	textSugg: {
+		fontSize: 16,
 	},
 });

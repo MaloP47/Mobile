@@ -2,44 +2,52 @@ import * as Location from 'expo-location';
 import { Alert, Linking, Platform } from 'react-native';
 
 const handleGeoLocation = async () => {
-  try {
-    // Obtenir le statut actuel de la permission sans demander à l'utilisateur
-    let { status } = await Location.getForegroundPermissionsAsync();
+	try {
+		let { status } = await Location.getForegroundPermissionsAsync();
 
-    if (status !== 'granted') {
-      // La permission n'est pas accordée, demander à l'utilisateur
-      const { status: newStatus } = await Location.requestForegroundPermissionsAsync();
-      if (newStatus !== 'granted') {
-        // L'utilisateur a refusé la permission
-        Alert.alert(
-          'Permission de localisation refusée',
-          'Pour utiliser cette fonctionnalité, veuillez autoriser l\'accès à la localisation.',
-          [
-            { text: 'Annuler', style: 'cancel' },
-            {
-              text: 'Ouvrir les paramètres',
-              onPress: () => {
-                if (Platform.OS === 'ios') {
-                  Linking.openURL('app-settings:');
-                } else {
-                  Linking.openSettings();
-                }
-              },
-            },
-          ],
-        );
-        return null;
-      }
-      // La permission a été accordée après la demande
-      status = newStatus;
-    }
-
-    // La permission est accordée, obtenir la localisation
-    const location = await Location.getCurrentPositionAsync();
-    return location;
+	if (status !== 'granted') {
+		const { status: newStatus } = await Location.requestForegroundPermissionsAsync();
+	  	if (newStatus !== 'granted') {
+			Alert.alert(
+		  'On start geoloc denied',
+		  'Please allow geoloc',
+		  [
+			{ text: 'Cancel', style: 'cancel' },
+			{
+			  text: 'Open settings',
+			  onPress: () => {
+				if (Platform.OS === 'ios') {
+				  Linking.openURL('app-settings:');
+				} else {
+				  Linking.openSettings();
+				}
+			  },
+			},
+		  ],
+		);
+		return null;
+	  }
+	}
+	const location = await Location.getCurrentPositionAsync();
+	console.log("Loc OK");
+	const response = await fetch(
+		`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${location.coords.latitude}&longitude=${location.coords.longitude}&language=fr`
+	);
+	const data = await response.json();
+	if (data && data.results && data.results.lenght > 0) {
+		const localisation = data.results[0];
+		return {
+			...location,
+			city: localisation.name,
+			region: localisation.admin1,
+			country: localisation.country,
+		};
+	} else {
+		return location;
+	}
   } catch (error) {
-    console.log('Erreur lors de la demande de localisation:', error);
-    return null;
+	console.log('Error geoloc API', error);
+	return null;
   }
 };
 

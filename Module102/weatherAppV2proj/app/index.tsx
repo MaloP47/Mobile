@@ -6,18 +6,23 @@ import {
 	StyleSheet,
 	TextInput,
 	FlatList,
-	TouchableOpacity
+	TouchableOpacity,
+	StatusBar
 } from 'react-native';
 import { TabView, TabBar, SceneRendererProps, NavigationState } from 'react-native-tab-view';
+
 import Currently from './components/Currently';
 import Today from './components/Today';
 import Weekly from './components/Weekly';
+
 import handleGeoLocation from './utils/geolocation';
+import { toHumanLoc } from './utils/toHumanLoc';
+import useOrientation from './customHooks/useOrientation';
 import { LocationObject } from 'expo-location';
-import useOrientation from './customHooks/orientationScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
+
 import { useDebounce } from 'use-debounce'
-import { toHumanLoc } from './utils/reverseFromCoordinates';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Route {
 	key: string;
@@ -40,6 +45,20 @@ export default function app() {
 	const [location, setLocation] = useState<LocationObject | null>(null);
 	const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
 	const [debouncedSearchText] = useDebounce(searchText, 500);
+
+	const [defLocation, setDefLocation] = useState(null)
+	const fetchLocation = async () => {
+		const locH = await toHumanLoc(2.340143, 48.9097358);
+		if (locH && locH.address) {
+			const { city, state, country, town } = locH.address;
+			console.log(locH);
+			console.log(`${city}, ${town}, ${state}, ${country}`);
+			setDefLocation(locH);
+		}
+	};
+	useEffect(() => {
+		fetchLocation();
+	}, []);
 
 	const fetchCity = async (query: string) => {
 		if (query.length < 3) {
@@ -95,9 +114,9 @@ export default function app() {
 	const renderScene = ({ route }: { route: Route }) => {
 		switch (route.key) {
 			case 'first':
-				return <Currently searchText={searchText} />;
+				return <Currently location={defLocation} />;
 			case 'second':
-				return <Today searchText={searchText} />;
+				return <Today location={defLocation} />;
 			case 'third':
 			return <Weekly searchText={searchText} />;
 		default:
@@ -119,7 +138,11 @@ export default function app() {
   	);
 
 	return (
-		<View style={{flex: 1}}>
+		<SafeAreaView style={{flex: 1, justifyContent: "center"}}>
+			<StatusBar
+				backgroundColor="pink"
+				hidden={false}
+			/>
 			<View style={styles.topBar}>
 				<Ionicons
 					name="search-sharp"
@@ -178,14 +201,14 @@ export default function app() {
 					// onPress={() => {
 					// 	setSearchText('Geolocation');
 					//   }}
-					// onPress={iconLoc}
-					onPress={async () => {
-						const locH = await toHumanLoc(2.257679, 48.8436083);
-						if (locH && locH.address) {
-							const { city, state, country } = locH.address;
-							console.log(`${city}, ${state}, ${country}`);
-						}
-					}}
+					onPress={iconLoc}
+					// onPress={async () => {
+					// 	const locH = await toHumanLoc(2.257679, 48.8436083);
+					// 	if (locH && locH.address) {
+					// 		const { city, state, country } = locH.address;
+					// 		console.log(`${city}, ${state}, ${country}`);
+					// 	}
+					// }}
 				/>
 			</View>
 			<TabView
@@ -196,7 +219,7 @@ export default function app() {
 				tabBarPosition='bottom'
 				renderTabBar={renderTab}
 			/>
-		</View>
+		</SafeAreaView>
   	);
 }
 

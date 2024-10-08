@@ -7,7 +7,7 @@ import {
 	TextInput,
 	FlatList,
 	TouchableOpacity,
-	StatusBar
+	Platform,
 } from 'react-native';
 import { TabView, TabBar, SceneRendererProps, NavigationState } from 'react-native-tab-view';
 
@@ -15,10 +15,12 @@ import Currently from './components/Currently';
 import Today from './components/Today';
 import Weekly from './components/Weekly';
 
-import handleGeoLocation from './utils/geolocation';
-import { toHumanLoc } from './utils/toHumanLoc';
+import handleGeoLocation from './utils/handleGeolocation';
+import { reverseLoc, currentMeteo } from './utils/api';
+import checkGeo from './customHooks/checkGeo';
+
 import useOrientation from './customHooks/useOrientation';
-import { LocationObject } from 'expo-location';
+import * as Location from 'expo-location';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { useDebounce } from 'use-debounce'
@@ -41,84 +43,97 @@ export default function app() {
 		{ key: 'third', title: 'Weekly', icon: "calendar-outline" },
 	]);
 	const [index, setIndex] = useState<number>(0);
-	const [searchText, setSearchText] = useState<string>('');
-	const [location, setLocation] = useState<LocationObject | null>(null);
-	const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
-	const [debouncedSearchText] = useDebounce(searchText, 500);
 
-	const [defLocation, setDefLocation] = useState(null)
-	const fetchLocation = async () => {
-		const locH = await toHumanLoc(2.340143, 48.9097358);
-		if (locH && locH.address) {
-			const { city, state, country, town } = locH.address;
-			console.log(locH);
-			console.log(`${city}, ${town}, ${state}, ${country}`);
-			setDefLocation(locH);
-		}
-	};
-	useEffect(() => {
-		fetchLocation();
-	}, []);
+	const [isGeoLocActivated, setIsGeoLocActivated] = useState(false);
 
-	const fetchCity = async (query: string) => {
-		if (query.length < 3) {
-			setCitySuggestions([]);
-			return;
-		}
-		try {
-			const response = await fetch(
-				`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=fr`
-			);
-			const data = await response.json();
-			if (data && data.results) {
-				setCitySuggestions(data.results);
-			} else {
-				setCitySuggestions([]);
-			}
-		} catch (error) {
-			console.log("Error fetching geo API " + error);
-			setCitySuggestions([]);
-		}
-	}
+	const [geoLocation, setGeoLocation] = useState<Location.LocationObject | null | undefined>(null);
 
-	useEffect(() => {
-		fetchCity(debouncedSearchText);
-	}, [debouncedSearchText]);
+	const [firstTimeCheckGeo, setFirstTimeCheckGeo] = useState(true);
 
-	useEffect(() => {
-		const reqLocation = async () => {
-			const loc = await handleGeoLocation();
-			if (loc) {
-				setLocation(loc);
-			} else {
-				console.log('None at launch')
-			}
-		};
-		reqLocation();
-	}, []);
 
-	const iconLoc = async () => {
-		const loc = await handleGeoLocation();
-		if (loc) {
-			setLocation(loc);
-			console.log(loc);
-			if ('city' in loc && 'country' in loc) {
-				setSearchText(`${loc.city}, ${loc.country}`);
-				console.log(searchText);
-			}
-		} else {
-			console.log('Icon not working')
-		}
-	};
+	// useEffect(() => {
+	// 	checkGeo(setGeoActivated);
+	//   }, []);
+
+	
+	//   useEffect(() => {
+	// 	const fetchLocation = async () => {
+	// 	  if (geoActivated) {
+	// 		const locH = await reverseLoc(2.340143, 48.9097358);
+	// 		if (locH && locH.address) {
+	// 		  const { city, state, country, town } = locH.address;
+	// 		  console.log(locH);
+	// 		  console.log(`${city}, ${town}, ${state}, ${country}`);
+	// 		  setDefLocation(locH);
+	// 		}
+	// 	  }
+	// 	};
+	
+	// 	fetchLocation();
+	//   }, [geoActivated]);
+	
+
+
+	// if (geoActivated === true) {
+	// 	const fetchLocation = async () => {
+	// 		const locH = await reverseLoc(2.340143, 48.9097358);
+	// 		if (locH && locH.address) {
+	// 			const { city, state, country, town } = locH.address;
+	// 			console.log(locH);
+	// 			console.log(`${city}, ${town}, ${state}, ${country}`);
+	// 			setDefLocation(locH);
+	// 		}
+	// 	};
+	// 	useEffect(() => {
+	// 		fetchLocation();
+	// 	}, []);
+	// }
+
+	// const fetchCity = async (query: string) => {
+	// 	if (query.length < 3) {
+	// 		setCitySuggestions([]);
+	// 		return;
+	// 	}
+	// 	try {
+	// 		const response = await fetch(
+	// 			`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=fr`
+	// 		);
+	// 		const data = await response.json();
+	// 		if (data && data.results) {
+	// 			setCitySuggestions(data.results);
+	// 		} else {
+	// 			setCitySuggestions([]);
+	// 		}
+	// 	} catch (error) {
+	// 		console.log("Error fetching geo API " + error);
+	// 		setCitySuggestions([]);
+	// 	}
+	// }
+
+	// useEffect(() => {
+	// 	fetchCity(debouncedSearchText);
+	// }, [debouncedSearchText]);
+
+	// useEffect(() => {
+	// 	const reqLocation = async () => {
+	// 		const loc = await handleGeoLocation();
+	// 		if (loc) {
+	// 			setLocation(loc);
+	// 		} else {
+	// 			console.log('None at launch')
+	// 		}
+	// 	};
+	// 	reqLocation();
+	// }, []);
 
 	const renderScene = ({ route }: { route: Route }) => {
 		switch (route.key) {
 			case 'first':
-				return <Currently location={defLocation} />;
+				return <Currently location={geoLocation} />;
 			case 'second':
-				return <Today location={defLocation} />;
+				return <Today location={geoLocation} />;
 			case 'third':
-			return <Weekly searchText={searchText} />;
+			return <Weekly location={geoLocation} />;
 		default:
 			return null;
 		}
@@ -138,11 +153,7 @@ export default function app() {
   	);
 
 	return (
-		<SafeAreaView style={{flex: 1, justifyContent: "center"}}>
-			<StatusBar
-				backgroundColor="pink"
-				hidden={false}
-			/>
+		<SafeAreaView style={ styles.safe }>
 			<View style={styles.topBar}>
 				<Ionicons
 					name="search-sharp"
@@ -159,56 +170,30 @@ export default function app() {
 					autoComplete='country'
 					placeholder='Search location...'
 					maxLength={30}
-					value={searchText}
-					onChangeText={(text) => {
-						setSearchText(text);
-					}}
-					onSubmitEditing={() => {
-						setSearchText('');
-						setCitySuggestions([]);
-					}}
-					onBlur={() => {
-						setCitySuggestions([]);
-					}}
 				/>
-				{citySuggestions.length > 0 && (
-					<View style={styles.citySugg}>
-						<FlatList
-							data={citySuggestions}
-							keyExtractor={(item) => item.id.toString()}
-							renderItem={({ item }) => (
-								<TouchableOpacity
-									style={styles.itemSugg}
-									onPress={() => {
-										console.log("Touch sugg");
-										setSearchText(`${item.name}, ${item.country}`);
-										setCitySuggestions([]);
-									}}
-								>
-									<Text style={styles.textSugg}>
-										{item.name}, {item.admin1 ? item.admin1 + ', ' : ''}
-										{item.country}
-									</Text>
-								</TouchableOpacity>
-							)}
-						/>
-					</View>
-				)}
 				<Text style={{fontSize: 24, lineHeight: 20}}>|  </Text>
 				<Ionicons
 					name="location-outline"
 					size={32} color="black"
-					// onPress={() => {
-					// 	setSearchText('Geolocation');
-					//   }}
-					onPress={iconLoc}
-					// onPress={async () => {
-					// 	const locH = await toHumanLoc(2.257679, 48.8436083);
-					// 	if (locH && locH.address) {
-					// 		const { city, state, country } = locH.address;
-					// 		console.log(`${city}, ${state}, ${country}`);
-					// 	}
-					// }}
+					onPress={async () => {
+						const activated = await handleGeoLocation(firstTimeCheckGeo);
+						setFirstTimeCheckGeo(false)
+						setIsGeoLocActivated(activated)
+						if (isGeoLocActivated) {
+							const location = await Location.getCurrentPositionAsync();
+							if (location && location.coords.latitude && location.coords.latitude) {
+								const reverse = await reverseLoc(location.coords.longitude, location.coords.latitude);
+								if (reverse && reverse.address) {
+									setGeoLocation(reverse);
+								} else {
+									setGeoLocation(undefined);
+									console.log("Fuck");
+								}
+							} else {
+								console.log("Problem with mobile API");
+							}
+						}
+					}}
 				/>
 			</View>
 			<TabView
@@ -224,6 +209,12 @@ export default function app() {
 }
 
 const styles = StyleSheet.create({
+	safe: {
+		flex: 1,
+        justifyContent: 'center',
+        paddingTop: Platform.OS === "android" ? -20 : -50,
+        paddingBottom: -50,
+	},
 	barTab: {
 		backgroundColor: 'white',
 	},
@@ -234,7 +225,6 @@ const styles = StyleSheet.create({
 	topBar: {
 		flexDirection: 'row',
     	alignItems: 'center',
-		// justifyContent: 'space-between',
     	paddingHorizontal: 10,
     	height: 50,
     	backgroundColor: 'grey',
@@ -266,3 +256,28 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 	},
 });
+
+
+				{/* {citySuggestions.length > 0 && (
+					<View style={styles.citySugg}>
+						<FlatList
+							data={citySuggestions}
+							keyExtractor={(item) => item.id.toString()}
+							renderItem={({ item }) => (
+								<TouchableOpacity
+									style={styles.itemSugg}
+									onPress={() => {
+										console.log("Touch sugg");
+										setSearchText(`${item.name}, ${item.country}`);
+										setCitySuggestions([]);
+									}}
+								>
+									<Text style={styles.textSugg}>
+										{item.name}, {item.admin1 ? item.admin1 + ', ' : ''}
+										{item.country}
+									</Text>
+								</TouchableOpacity>
+							)}
+						/>
+					</View>
+				)} */}

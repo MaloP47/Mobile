@@ -16,6 +16,14 @@ interface CurrentlyProps {
 
 export default function Currently({ location }: CurrentlyProps) {
 
+	if (location === undefined) {
+		return (
+			<View style={styles.container}>
+				<Text style={{fontSize:40, color:"red"}}>Fuck</Text>
+			</View>
+		);
+	}
+
 	let city = location?.address?.city;
 	const state = location?.address?.state;
 	const country = location?.address?.country;

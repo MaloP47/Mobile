@@ -24,6 +24,14 @@ const TTWS = [
 
 export default function Today({ location }: CurrentlyProps) {
 
+	if (location === undefined) {
+		return (
+			<View style={styles.container}>
+				<Text style={{fontSize:40, color:"red"}}>Fuck</Text>
+			</View>
+		);
+	}
+
 	let city = location?.address?.city;
 	const state = location?.address?.state;
 	const country = location?.address?.country;
@@ -77,6 +85,7 @@ const styles = StyleSheet.create({
 		paddingVertical: 10,
 		backgroundColor: 'pink',
 		marginVertical: 2,
+		height: 70,
 		alignSelf: 'center',
 	},
 	time: {

@@ -1,8 +1,17 @@
 import { Text, StyleSheet, View, FlatList } from 'react-native'
 import React from 'react'
 
+interface Address {
+	city?: string;
+	state?: string;
+	country?: string;
+	town?: string;
+}
+
 interface CurrentlyProps {
-  searchText?: string;
+	location?: {
+		address?: Address;
+	};
 }
 
 const TTWS = [
@@ -13,12 +22,29 @@ const TTWS = [
 	{ date: '2024-01-05', min: '12°C', max: '22°C', weather: 'Partly Cloudy' },
 ];
 
-export default function Weekly({ searchText }: CurrentlyProps) { // Change prop
+export default function Weekly({ location }: CurrentlyProps) {
+
+	if (location === undefined) {
+		return (
+			<View style={styles.container}>
+				<Text style={{fontSize:40, color:"red"}}>Fuck</Text>
+			</View>
+		);
+	}
+
+	let city = location?.address?.city;
+	const state = location?.address?.state;
+	const country = location?.address?.country;
+
+	if (!city) {
+		city = location?.address?.town;
+	}
+
 	return (
 		<View style={styles.container}>
-			<Text style={styles.location}>Paris</Text>
-			<Text style={styles.region}>Ile de France</Text>
-			<Text style={styles.country}>France</Text>
+			<Text style={styles.location}>{city ? city : "Edit location"}</Text>
+			<Text style={styles.region}>{state || ""}</Text>
+			<Text style={styles.country}>{country || ""}</Text>
 			<FlatList // Need to change the way list is displayed
 				data={TTWS} // Change props
 				keyExtractor={(item, index) => index.toString()}
@@ -57,8 +83,9 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		width: "95%",
 		backgroundColor: 'pink',
-		paddingVertical: 20,
+		paddingVertical: 10,
 		alignSelf: 'center',
+		height: 70,
 		marginVertical: 3,
 	},
 	date: {

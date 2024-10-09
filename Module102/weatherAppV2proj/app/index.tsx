@@ -50,6 +50,8 @@ export default function app() {
 
 	const [firstTimeCheckGeo, setFirstTimeCheckGeo] = useState(true);
 
+	
+
 
 	// useEffect(() => {
 	// 	checkGeo(setGeoActivated);

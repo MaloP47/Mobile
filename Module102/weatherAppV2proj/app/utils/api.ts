@@ -12,7 +12,6 @@ export const reverseLoc = async (longitude: number, latitude: number) => {
 	}
 };
 
-
 export const currentMeteo = async (longitude: number, latitude: number) => {
 	try {
 		const response = await axios.get(
@@ -25,12 +24,10 @@ export const currentMeteo = async (longitude: number, latitude: number) => {
 	}
 };
 
-
-// https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m,weather_code,wind_speed_10m&forecast_hours=12
 export const todayMeteo = async (longitude: number, latitude: number) => {
 	try {
 		const response = await axios.get(
-			`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m`
+			`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,weather_code,wind_speed_10m&forecast_hours=12`
 		);
 		return response?.data;
 	} catch (error) {
@@ -39,12 +36,10 @@ export const todayMeteo = async (longitude: number, latitude: number) => {
 	}
 };
 
-
-// https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_hours=12
 export const weeklyMeteo = async (longitude: number, latitude: number) => {
 	try {
 		const response = await axios.get(
-			`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m`
+			`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_hours=12`
 		);
 		return response?.data;
 	} catch (error) {

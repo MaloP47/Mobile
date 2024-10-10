@@ -20,6 +20,8 @@ import { reverseLoc, currentMeteo } from './utils/api';
 import checkGeo from './customHooks/checkGeo';
 
 import useOrientation from './customHooks/useOrientation';
+import { useWeatherData } from './customHooks/useWeatherData';
+
 import * as Location from 'expo-location';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
@@ -36,6 +38,7 @@ export default function app() {
 
 	const layout = useWindowDimensions();
 	const orientation = useOrientation();
+	const { weatherData, errors } = useWeatherData()
 
 	const [routes] = useState<Route[]>([
 		{ key: 'first', title: 'Currently', icon: "sunny-outline" },
@@ -50,83 +53,7 @@ export default function app() {
 
 	const [firstTimeCheckGeo, setFirstTimeCheckGeo] = useState(true);
 
-	
 
-
-	// useEffect(() => {
-	// 	checkGeo(setGeoActivated);
-	//   }, []);
-
-	
-	//   useEffect(() => {
-	// 	const fetchLocation = async () => {
-	// 	  if (geoActivated) {
-	// 		const locH = await reverseLoc(2.340143, 48.9097358);
-	// 		if (locH && locH.address) {
-	// 		  const { city, state, country, town } = locH.address;
-	// 		  console.log(locH);
-	// 		  console.log(`${city}, ${town}, ${state}, ${country}`);
-	// 		  setDefLocation(locH);
-	// 		}
-	// 	  }
-	// 	};
-	
-	// 	fetchLocation();
-	//   }, [geoActivated]);
-	
-
-
-	// if (geoActivated === true) {
-	// 	const fetchLocation = async () => {
-	// 		const locH = await reverseLoc(2.340143, 48.9097358);
-	// 		if (locH && locH.address) {
-	// 			const { city, state, country, town } = locH.address;
-	// 			console.log(locH);
-	// 			console.log(`${city}, ${town}, ${state}, ${country}`);
-	// 			setDefLocation(locH);
-	// 		}
-	// 	};
-	// 	useEffect(() => {
-	// 		fetchLocation();
-	// 	}, []);
-	// }
-
-	// const fetchCity = async (query: string) => {
-	// 	if (query.length < 3) {
-	// 		setCitySuggestions([]);
-	// 		return;
-	// 	}
-	// 	try {
-	// 		const response = await fetch(
-	// 			`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=fr`
-	// 		);
-	// 		const data = await response.json();
-	// 		if (data && data.results) {
-	// 			setCitySuggestions(data.results);
-	// 		} else {
-	// 			setCitySuggestions([]);
-	// 		}
-	// 	} catch (error) {
-	// 		console.log("Error fetching geo API " + error);
-	// 		setCitySuggestions([]);
-	// 	}
-	// }
-
-	// useEffect(() => {
-	// 	fetchCity(debouncedSearchText);
-	// }, [debouncedSearchText]);
-
-	// useEffect(() => {
-	// 	const reqLocation = async () => {
-	// 		const loc = await handleGeoLocation();
-	// 		if (loc) {
-	// 			setLocation(loc);
-	// 		} else {
-	// 			console.log('None at launch')
-	// 		}
-	// 	};
-	// 	reqLocation();
-	// }, []);
 
 	const renderScene = ({ route }: { route: Route }) => {
 		switch (route.key) {

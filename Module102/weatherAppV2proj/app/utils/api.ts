@@ -6,7 +6,6 @@ export const reverseLoc = async (longitude: number, latitude: number) => {
 			`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
 		);
 		console.log("ReverseLoc API called " + Date.now())
-		console.log(response.data);
 		return response?.data;
 	} catch (error) {
 		console.log("ReverseLoc "+ error);
@@ -16,9 +15,9 @@ export const reverseLoc = async (longitude: number, latitude: number) => {
 
 export const currentMeteo = async (longitude: number, latitude: number) => {
 	try {
-		const response = await axios.get(
-			`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m`
-		);
+		const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m`;
+		console.log(url);
+		const response = await axios.get(url);
 		console.log("Current API called " + Date.now())
 		return response?.data;
 	} catch (error) {

@@ -16,8 +16,7 @@ import Today from './components/Today';
 import Weekly from './components/Weekly';
 
 import handleGeoLocation from './utils/handleGeolocation';
-import { reverseLoc, currentMeteo } from './utils/api';
-import checkGeo from './customHooks/checkGeo';
+import { reverseLoc } from './utils/api';
 
 import useOrientation from './customHooks/useOrientation';
 import { useWeatherData } from './customHooks/useWeatherData';
@@ -36,33 +35,48 @@ interface Route {
   
 export default function app() {
 
-	const layout = useWindowDimensions();
-	const orientation = useOrientation();
-	const { weatherData, errors } = useWeatherData()
-
 	const [routes] = useState<Route[]>([
 		{ key: 'first', title: 'Currently', icon: "sunny-outline" },
 		{ key: 'second', title: 'Today', icon: "today-outline" },
 		{ key: 'third', title: 'Weekly', icon: "calendar-outline" },
 	]);
 	const [index, setIndex] = useState<number>(0);
-
 	const [isGeoLocActivated, setIsGeoLocActivated] = useState(false);
-
 	const [geoLocation, setGeoLocation] = useState<Location.LocationObject | null | undefined>(null);
-
 	const [firstTimeCheckGeo, setFirstTimeCheckGeo] = useState(true);
+	const [coordinates, setCoordinates] = useState<{ longitude: number; latitude: number } | null>(null);
+	
+	const { weatherData, errors } = useWeatherData(
+		coordinates?.longitude ?? 0,
+		coordinates?.latitude ?? 0,
+	);
 
+	console.log(coordinates);
 
+	// useEffect(() => {
+	// 	if (geoLocation && geoLocation.coords) {
+	// 		const { longitude, latitude } = geoLocation.coords;
+	// 		if (longitude != null && latitude != null) {
+	// 			setCoordinates({ longitude, latitude });
+	// 		}
+	// 	}
+	// }, [coordinates]);
+	
+	const layout = useWindowDimensions();
+	useOrientation();
+
+	// console.log(weatherData.currentWeather);
+	// console.log(weatherData.todayWeather);
+	// console.log(weatherData.weeklyWeather);
 
 	const renderScene = ({ route }: { route: Route }) => {
 		switch (route.key) {
 			case 'first':
-				return <Currently location={geoLocation} />;
+				return <Currently location={geoLocation} weather={weatherData.currentWeather} />;
 			case 'second':
-				return <Today location={geoLocation} />;
+				return <Today location={geoLocation} weather={weatherData.todayWeather} />;
 			case 'third':
-			return <Weekly location={geoLocation} />;
+			return <Weekly location={geoLocation} weather={weatherData.weeklyWeather} />;
 		default:
 			return null;
 		}
@@ -108,18 +122,24 @@ export default function app() {
 						const activated = await handleGeoLocation(firstTimeCheckGeo);
 						setFirstTimeCheckGeo(false)
 						setIsGeoLocActivated(activated)
-						if (isGeoLocActivated) {
-							const location = await Location.getCurrentPositionAsync();
-							if (location && location.coords.latitude && location.coords.latitude) {
-								const reverse = await reverseLoc(location.coords.longitude, location.coords.latitude);
-								if (reverse && reverse.address) {
-									setGeoLocation(reverse);
+						if (activated) {
+							try {
+								const location = await Location.getCurrentPositionAsync();
+								if (location && location.coords) {
+									const { longitude, latitude } = location.coords;
+									setCoordinates({ longitude, latitude });
+									const reverse = await reverseLoc(location.coords.longitude, location.coords.latitude);
+									if (reverse && reverse.address) {
+										setGeoLocation(reverse);
+									} else {
+										setGeoLocation(undefined);
+										console.log("Fuck");
+									}
 								} else {
-									setGeoLocation(undefined);
-									console.log("Fuck");
+									console.log("Problem with mobile API");
 								}
-							} else {
-								console.log("Problem with mobile API");
+							} catch (error) {
+								console.error('Error fetching location:', error);
 							}
 						}
 					}}
@@ -185,28 +205,3 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 	},
 });
-
-
-				{/* {citySuggestions.length > 0 && (
-					<View style={styles.citySugg}>
-						<FlatList
-							data={citySuggestions}
-							keyExtractor={(item) => item.id.toString()}
-							renderItem={({ item }) => (
-								<TouchableOpacity
-									style={styles.itemSugg}
-									onPress={() => {
-										console.log("Touch sugg");
-										setSearchText(`${item.name}, ${item.country}`);
-										setCitySuggestions([]);
-									}}
-								>
-									<Text style={styles.textSugg}>
-										{item.name}, {item.admin1 ? item.admin1 + ', ' : ''}
-										{item.country}
-									</Text>
-								</TouchableOpacity>
-							)}
-						/>
-					</View>
-				)} */}

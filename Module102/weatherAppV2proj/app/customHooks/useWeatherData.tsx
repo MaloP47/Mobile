@@ -33,7 +33,7 @@ export const useWeatherData = (longitude: number, latitude: number) => {
 	});
 
 	const cacheDuration = {
-		currentDuration: 15 * 60 * 1000, //15min
+		currentDuration: 1 * 60 * 1000, //15min
 		todayDuration: 60 * 60 * 1000, //1h
 		weeklyDuration: 120 * 60 * 1000, //2h
 	}

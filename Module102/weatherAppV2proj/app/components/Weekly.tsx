@@ -1,5 +1,7 @@
-import { Text, StyleSheet, View, FlatList } from 'react-native'
-import React from 'react'
+import { Text, StyleSheet, View, FlatList } from 'react-native';
+import React from 'react';
+import { weatherDescriptions } from '../utils/weatherCodes';
+import stringToTime from '../utils/stringToTime';
 
 interface Address {
 	city?: string;
@@ -12,22 +14,15 @@ interface CurrentlyProps {
 	location?: {
 		address?: Address;
 	};
+	weather?: any;
 }
 
-const TTWS = [
-	{ date: '2024-01-01', min: '5°C', max: '15°C', weather: 'Sunny' },
-	{ date: '2024-01-02', min: '6°C', max: '16°C', weather: 'Cloudy' },
-	{ date: '2024-01-03', min: '8°C', max: '18°C', weather: 'Rainy' },
-	{ date: '2024-01-04', min: '10°C', max: '20°C', weather: 'Sunny' },
-	{ date: '2024-01-05', min: '12°C', max: '22°C', weather: 'Partly Cloudy' },
-];
-
-export default function Weekly({ location }: CurrentlyProps) {
+export default function Weekly({ location, weather }: CurrentlyProps) {
 
 	if (location === undefined) {
 		return (
 			<View style={styles.container}>
-				<Text style={{fontSize:40, color:"red"}}>Fuck</Text>
+				<Text style={{fontSize:40, color:"red"}}>Problem with location</Text>
 			</View>
 		);
 	}
@@ -40,20 +35,44 @@ export default function Weekly({ location }: CurrentlyProps) {
 		city = location?.address?.town;
 	}
 
+	if (!weather || !weather.daily) {
+		return (
+			<View style={styles.container}>
+				<Text style={styles.location}>{city ? city : "Edit location"}</Text>
+				<Text style={styles.region}>{state || ""}</Text>
+				<Text style={styles.country}>{country || ""}</Text>
+				<Text style={{ fontSize: 20, color: 'red' }}>No datas</Text>
+			</View>
+		);
+	}
+
+	const dailyData = weather.daily;
+	const timeArray = dailyData.time;
+	const temperatureMaxArray = dailyData.temperature_2m_max;
+	const temperatureMinArray = dailyData.temperature_2m_min;
+	const weatherCodeArray = dailyData.weather_code;
+
+	const DATA = timeArray.map((time: string, index: number) => ({
+		time, 
+		temperatureMax: temperatureMaxArray[index],
+		temperatureMin: temperatureMinArray[index],
+		weatherCode: weatherDescriptions[weatherCodeArray[index]] || "Unknown",
+	}));
+
 	return (
 		<View style={styles.container}>
 			<Text style={styles.location}>{city ? city : "Edit location"}</Text>
 			<Text style={styles.region}>{state || ""}</Text>
 			<Text style={styles.country}>{country || ""}</Text>
-			<FlatList // Need to change the way list is displayed
-				data={TTWS} // Change props
+			<FlatList
+				data={DATA}
 				keyExtractor={(item, index) => index.toString()}
 				renderItem={({ item }) =>
 					<View style={styles.list}>
-						<Text style={styles.date}>{item.date}</Text>
-						<Text style={styles.min}>{item.min}</Text>
-						<Text style={styles.max}>{item.max}</Text>
-						<Text style={styles.weatherDescription}>{item.weather}</Text>
+						<Text style={styles.date}>{item.time}</Text>
+						<Text style={styles.min}>{item.temperatureMin + "°C"}</Text>
+						<Text style={styles.max}>{item.temperatureMax + "°C"}</Text>
+						<Text style={styles.weatherDescription}>{item.weatherCode}</Text>
 					</View>
 				}
 			/>
@@ -79,7 +98,7 @@ const styles = StyleSheet.create({
 	},
 	list: {
 		flexDirection: "row",
-		justifyContent: "space-between",
+		justifyContent: "space-evenly",
 		alignItems: "center",
 		width: "95%",
 		backgroundColor: 'pink',

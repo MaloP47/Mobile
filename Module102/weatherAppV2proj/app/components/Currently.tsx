@@ -1,5 +1,6 @@
 import { Text, StyleSheet, View } from 'react-native'
 import React from 'react'
+import { weatherDescriptions } from '../utils/weatherCodes';
 
 interface Address {
 	city?: string;
@@ -12,14 +13,15 @@ interface CurrentlyProps {
 	location?: {
 		address?: Address;
 	};
+	weather?: any;
 }
 
-export default function Currently({ location }: CurrentlyProps) {
+export default function Currently({ location, weather }: CurrentlyProps) {
 
 	if (location === undefined) {
 		return (
 			<View style={styles.container}>
-				<Text style={{fontSize:40, color:"red"}}>Fuck</Text>
+				<Text style={{fontSize:40, color:"red"}}>Problem with location</Text>
 			</View>
 		);
 	}
@@ -27,6 +29,23 @@ export default function Currently({ location }: CurrentlyProps) {
 	let city = location?.address?.city;
 	const state = location?.address?.state;
 	const country = location?.address?.country;
+
+	let temperature, weatherDescription, windSpeed;
+	if (weather && weather.current) {
+		temperature = weather.current.temperature_2m;
+		const code = weather.current.weather_code;
+  		weatherDescription = weatherDescriptions[code] || 'Unknown';
+		windSpeed = weather.current.wind_speed_10m;
+	} else {
+		return (
+			<View style={styles.container}>
+				<Text style={styles.location}>{city ? city : "Edit location"}</Text>
+				<Text style={styles.region}>{state || ""}</Text>
+				<Text style={styles.country}>{country || ""}</Text>
+				<Text style={{ fontSize: 20, color: 'red' }}>No datas</Text>
+			</View>
+		);
+	}
 
 	if (!city) {
 		city = location?.address?.town;
@@ -37,9 +56,9 @@ export default function Currently({ location }: CurrentlyProps) {
 			<Text style={styles.location}>{city ? city : "Edit location"}</Text>
 			<Text style={styles.region}>{state || ""}</Text>
 			<Text style={styles.country}>{country || ""}</Text>
-			<Text style={styles.temperature}>21°C</Text>
-			<Text style={styles.weatherDescription}>Sunny</Text>
-			<Text style={styles.windSpeed}>30km/h</Text>
+			<Text style={styles.temperature}>{temperature + "°C"|| ""}</Text>
+			<Text style={styles.weatherDescription}>{weatherDescription || ""}</Text>
+			<Text style={styles.windSpeed}>{windSpeed + " km/h"|| ""}</Text>
 		</View>
 	);
 }
@@ -51,22 +70,27 @@ const styles = StyleSheet.create({
 		justifyContent: "center"
 	},
 	location: {
-		fontSize: 32,
+		fontSize: 36,
 		textAlign: 'center',
 	},
 	region: {
-
+		fontSize: 20,
+		textAlign: 'center',
 	},
 	country: {
-
+		fontSize: 20,
+		textAlign: 'center',
 	},
 	temperature: {
-
+		fontSize: 24,
+		textAlign: 'center',
 	},
 	weatherDescription: {
-
+		fontSize: 24,
+		textAlign: 'center',
 	},
 	windSpeed: {
-
+		fontSize: 24,
+		textAlign: 'center',
 	},
 });

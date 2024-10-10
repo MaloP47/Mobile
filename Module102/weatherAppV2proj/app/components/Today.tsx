@@ -1,5 +1,7 @@
 import { Text, StyleSheet, View, FlatList } from 'react-native'
 import React from 'react'
+import { weatherDescriptions } from '../utils/weatherCodes';
+import stringToTime from '../utils/stringToTime';
 
 interface Address {
 	city?: string;
@@ -12,22 +14,15 @@ interface CurrentlyProps {
 	location?: {
 		address?: Address;
 	};
+	weather?: any;
 }
 
-const TTWS = [
-	{ time: '08:00', temperature: '15°C', weather: 'Sunny', windSpeed: '5 km/h' },
-	{ time: '09:00', temperature: '16°C', weather: 'Cloudy', windSpeed: '10 km/h' },
-	{ time: '10:00', temperature: '18°C', weather: 'Rainy', windSpeed: '12 km/h' },
-	{ time: '11:00', temperature: '20°C', weather: 'Sunny', windSpeed: '8 km/h' },
-	{ time: '12:00', temperature: '22°C', weather: 'Partly Cloudy', windSpeed: '6 km/h' },
-];
-
-export default function Today({ location }: CurrentlyProps) {
+export default function Today({ location, weather }: CurrentlyProps) {
 
 	if (location === undefined) {
 		return (
 			<View style={styles.container}>
-				<Text style={{fontSize:40, color:"red"}}>Fuck</Text>
+				<Text style={{fontSize:40, color:"red"}}>Problem with location</Text>
 			</View>
 		);
 	}
@@ -35,10 +30,35 @@ export default function Today({ location }: CurrentlyProps) {
 	let city = location?.address?.city;
 	const state = location?.address?.state;
 	const country = location?.address?.country;
-
+	
 	if (!city) {
 		city = location?.address?.town;
 	}
+
+	if (!weather || !weather.hourly) {
+		return (
+			<View style={styles.container}>
+				<Text style={styles.location}>{city ? city : "Edit location"}</Text>
+				<Text style={styles.region}>{state || ""}</Text>
+				<Text style={styles.country}>{country || ""}</Text>
+				<Text style={{ fontSize: 20, color: 'red' }}>No datas</Text>
+			</View>
+		);
+	}
+
+	const hourlyData = weather.hourly;
+	const timeArray = hourlyData.time;
+	const temperatureArray = hourlyData.temperature_2m;
+	const weatherCodeArray = hourlyData.weather_code;
+	const windSpeedArray = hourlyData.wind_speed_10m;
+
+	const DATA = timeArray.map((time: string, index: number) => ({
+		formattedTime: stringToTime(time, 2), 
+		temperature: temperatureArray[index],
+		weatherCode: weatherDescriptions[weatherCodeArray[index]] || "Unknown",
+		windSpeed: windSpeedArray[index],
+	}));
+
 
 	return (
 		<View style={styles.container}>
@@ -46,14 +66,14 @@ export default function Today({ location }: CurrentlyProps) {
 			<Text style={styles.region}>{state || ""}</Text>
 			<Text style={styles.country}>{country || ""}</Text>
 			<FlatList
-				data={TTWS} // Change that
+				data={DATA}
 				keyExtractor={(item, index) => index.toString()}
 				renderItem={({ item }) =>
 					<View style={styles.list}>
-						<Text style={styles.time}>{item.time}</Text>
-						<Text style={styles.temperature}>{item.temperature}</Text>
-						<Text style={styles.weatherDescription}>{item.weather}</Text>
-						<Text style={styles.windSpeed}>{item.windSpeed}</Text>
+						<Text style={styles.time}>{item.formattedTime}</Text>
+						<Text style={styles.temperature}>{item.temperature + "°C"}</Text>
+						<Text style={styles.weatherDescription}>{item.weatherCode}</Text>
+						<Text style={styles.windSpeed}>{item.windSpeed + " km/h"}</Text>
 					</View>
 				}
 			/>
@@ -79,9 +99,9 @@ const styles = StyleSheet.create({
 	},
 	list: {
 		flexDirection: "row",
-		justifyContent: "space-between",
+		justifyContent: "space-evenly",
 		alignItems: "center",
-		width: "95%",
+		width: "100%",
 		paddingVertical: 10,
 		backgroundColor: 'pink',
 		marginVertical: 2,

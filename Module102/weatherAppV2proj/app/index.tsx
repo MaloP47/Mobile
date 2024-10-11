@@ -45,38 +45,37 @@ export default function app() {
 	const [geoLocation, setGeoLocation] = useState<Location.LocationObject | null | undefined>(null);
 	const [firstTimeCheckGeo, setFirstTimeCheckGeo] = useState(true);
 	const [coordinates, setCoordinates] = useState<{ longitude: number; latitude: number } | null>(null);
+	const [weatherData, setWeatherData] = useState<any>(null);
+	const [errors, setErrors] = useState<string | null>(null);
 	
-	const { weatherData, errors } = useWeatherData(
-		coordinates?.longitude ?? 0,
-		coordinates?.latitude ?? 0,
-	);
+	// const { weatherData, errors } = useWeatherData(
+	// 	coordinates?.longitude ?? 0,
+	// 	coordinates?.latitude ?? 0,
+	// );
 
-	console.log(coordinates);
+	useEffect(() => {
+		if (coordinates) {
+			const fetchWeatherData = async () => {
+				const { weatherData, errors } = useWeatherData(coordinates.longitude, coordinates.latitude);
+				setWeatherData(weatherData);
+				setErrors(errors);
+			};
+			fetchWeatherData();
+		}
+	}, [coordinates]);
 
-	// useEffect(() => {
-	// 	if (geoLocation && geoLocation.coords) {
-	// 		const { longitude, latitude } = geoLocation.coords;
-	// 		if (longitude != null && latitude != null) {
-	// 			setCoordinates({ longitude, latitude });
-	// 		}
-	// 	}
-	// }, [coordinates]);
-	
+
 	const layout = useWindowDimensions();
 	useOrientation();
-
-	// console.log(weatherData.currentWeather);
-	// console.log(weatherData.todayWeather);
-	// console.log(weatherData.weeklyWeather);
 
 	const renderScene = ({ route }: { route: Route }) => {
 		switch (route.key) {
 			case 'first':
-				return <Currently location={geoLocation} weather={weatherData.currentWeather} />;
+				return <Currently location={geoLocation} weather={weatherData?.currentWeather} />;
 			case 'second':
-				return <Today location={geoLocation} weather={weatherData.todayWeather} />;
+				return <Today location={geoLocation} weather={weatherData?.todayWeather} />;
 			case 'third':
-			return <Weekly location={geoLocation} weather={weatherData.weeklyWeather} />;
+			return <Weekly location={geoLocation} weather={weatherData?.weeklyWeather} />;
 		default:
 			return null;
 		}

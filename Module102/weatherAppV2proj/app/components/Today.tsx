@@ -35,7 +35,7 @@ export default function Today({ location, weather }: CurrentlyProps) {
 		city = location?.address?.town;
 	}
 
-	if (!weather || !weather.hourly) {
+	if (!weather || !weather.hourly || (weather.latitude != 0 && weather.longitude != 0)) {
 		return (
 			<View style={styles.container}>
 				<Text style={styles.location}>{city ? city : "Edit location"}</Text>

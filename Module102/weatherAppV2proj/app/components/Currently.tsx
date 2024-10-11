@@ -25,13 +25,17 @@ export default function Currently({ location, weather }: CurrentlyProps) {
 			</View>
 		);
 	}
-
+	
 	let city = location?.address?.city;
 	const state = location?.address?.state;
 	const country = location?.address?.country;
 
+	if (!city) {
+		city = location?.address?.town;
+	}
+
 	let temperature, weatherDescription, windSpeed;
-	if (weather && weather.current) {
+	if (weather && weather.current && (weather.latitude == 0 && weather.longitude == 0)) {
 		temperature = weather.current.temperature_2m;
 		const code = weather.current.weather_code;
   		weatherDescription = weatherDescriptions[code] || 'Unknown';
@@ -45,10 +49,6 @@ export default function Currently({ location, weather }: CurrentlyProps) {
 				<Text style={{ fontSize: 20, color: 'red' }}>No datas</Text>
 			</View>
 		);
-	}
-
-	if (!city) {
-		city = location?.address?.town;
 	}
 
 	return (

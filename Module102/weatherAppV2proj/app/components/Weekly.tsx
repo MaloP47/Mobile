@@ -35,7 +35,7 @@ export default function Weekly({ location, weather }: CurrentlyProps) {
 		city = location?.address?.town;
 	}
 
-	if (!weather || !weather.daily) {
+	if (!weather || !weather.daily || (weather.latitude != 0 && weather.longitude != 0)) {
 		return (
 			<View style={styles.container}>
 				<Text style={styles.location}>{city ? city : "Edit location"}</Text>

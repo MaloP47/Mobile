@@ -75,11 +75,9 @@ export const useWeatherData = (longitude: number, latitude: number) => {
 				}
 			}
 		};
-	
 		fetchData();
 	
 	}, [longitude, latitude]);
-
 	return {weatherData, errors};
 
 }

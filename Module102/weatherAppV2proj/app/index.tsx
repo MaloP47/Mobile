@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
 	View,
 	useWindowDimensions,
@@ -16,7 +16,7 @@ import Today from './components/Today';
 import Weekly from './components/Weekly';
 
 import handleGeoLocation from './utils/handleGeolocation';
-import { reverseLoc } from './utils/api';
+import { reverseLoc, searchCity } from './utils/api';
 
 import useOrientation from './customHooks/useOrientation';
 import { useWeatherData } from './customHooks/useWeatherData';
@@ -26,6 +26,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { useDebounce } from 'use-debounce'
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import debounce from 'lodash.debounce';
 
 interface Route {
 	key: string;
@@ -42,31 +44,59 @@ export default function app() {
 	]);
 	const [index, setIndex] = useState<number>(0);
 	const [isGeoLocActivated, setIsGeoLocActivated] = useState(false);
-	const [geoLocation, setGeoLocation] = useState<Location.LocationObject | null | undefined>(null);
+	const [geoLocation, setGeoLocation] = useState<Location.LocationObject | City | null | undefined>(null);
 	const [firstTimeCheckGeo, setFirstTimeCheckGeo] = useState(true);
 	const [coordinates, setCoordinates] = useState<{ longitude: number; latitude: number } | null>(null);
 	const [weatherData, setWeatherData] = useState<any>(null);
 	const [errors, setErrors] = useState<string | null>(null);
-	
-	// const { weatherData, errors } = useWeatherData(
-	// 	coordinates?.longitude ?? 0,
-	// 	coordinates?.latitude ?? 0,
-	// );
 
-	useEffect(() => {
-		if (coordinates) {
-			const fetchWeatherData = async () => {
-				const { weatherData, errors } = useWeatherData(coordinates.longitude, coordinates.latitude);
-				setWeatherData(weatherData);
-				setErrors(errors);
-			};
-			fetchWeatherData();
-		}
-	}, [coordinates]);
-
+	const [textInput, setTextInput] = useState<string | null>(null);
+	const [cityData, setCityData] =  useState<string | null>(null);
 
 	const layout = useWindowDimensions();
-	useOrientation();
+	const orienation = useOrientation();
+
+	const fetchCityData = async (input: string) => {
+		try {
+			if (input.length > 3) {
+				const data = await searchCity(input);
+				setCityData(data);
+			} else {
+				setCityData(null);
+			}
+		} catch (error) {
+			console.log("FetchCityData" + error);
+		}
+	};
+
+	const debounceFetch = useCallback(debounce(fetchCityData, 500), []);
+
+	const handleTextChange = (text: string) =>	{
+		setTextInput(text);
+		debounceFetch(text);
+	}
+
+	interface City {
+		id: number;
+		name: string;
+		country: string;
+		admin1: string;
+		longitude: number;
+		latitude: number;
+	}
+	
+		const handleCity = async (city: City) => {
+		try {
+			setCoordinates({ longitude: city.longitude, latitude: city.latitude });
+			setGeoLocation(city);
+			setTextInput('');
+			setCityData(null);
+			console.log(city);
+		} catch (error) {
+			console.log("HandleCity " + error);
+		}
+	};
+
 
 	const renderScene = ({ route }: { route: Route }) => {
 		switch (route.key) {
@@ -109,9 +139,9 @@ export default function app() {
 					style={styles.searchInput}
 					cursorColor='black'
 					selectionColor={"black"}
-					autoComplete='country'
 					placeholder='Search location...'
-					maxLength={30}
+					onChangeText={handleTextChange}
+					maxLength={15}
 				/>
 				<Text style={{fontSize: 24, lineHeight: 20}}>|  </Text>
 				<Ionicons
@@ -142,8 +172,21 @@ export default function app() {
 							}
 						}
 					}}
-				/>
+					/>
 			</View>
+			{cityData && (
+				<FlatList
+					data={cityData.results}
+					keyExtractor={(item) => item.id.toString()}
+					renderItem={({ item }) => (
+					<TouchableOpacity onPress={() => handleCity(item)} style={styles.itemSugg}>
+						<Text style={styles.textSugg}>{item.name}, {item.country}, {item.admin1}</Text>
+					</TouchableOpacity>
+					)}
+					style={styles.citySugg}
+					contentContainerStyle={styles.suggestionsContainer}
+				/>
+				)}
 			<TabView
 				navigationState={{ index, routes }}
 				renderScene={renderScene}
@@ -184,13 +227,11 @@ const styles = StyleSheet.create({
 		flexWrap: 'wrap',
 	},
 	citySugg: {
-		backgroundColor: 'white',
+		backgroundColor: 'pink',
 		position: 'absolute',
-		top: 40,
-		left: 0,
-		right: 0,
+		width: "100%",
+		top: 55,
 		zIndex: 1,
-		maxHeight: 200,
 		borderColor: '#ccc',
 		borderWidth: 1,
 	},
@@ -198,9 +239,12 @@ const styles = StyleSheet.create({
 		padding: 10,
 		borderBottomColor: '#ccc',
 		borderBottomWidth: 1,
-		backgroundColor: 'pink',
 	},
 	textSugg: {
 		fontSize: 16,
+		textAlign: 'center',
+	},
+	suggestionsContainer: {
+		justifyContent: 'center',
 	},
 });

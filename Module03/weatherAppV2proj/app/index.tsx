@@ -48,7 +48,11 @@ export default function app() {
 	const [coordinates, setCoordinates] = useState<{ longitude: number; latitude: number } | null>(null);
 
 	const [textInput, setTextInput] = useState<string | null>(null);
-	const [cityData, setCityData] =  useState<string | null | any[]>(null);
+	interface CityData {
+		results: City[];
+	}
+	
+	const [cityData, setCityData] =  useState<CityData | null>(null);
 
 	const layout = useWindowDimensions();
 	const orienation = useOrientation();
@@ -71,7 +75,7 @@ export default function app() {
 				return null;
 			}
 		} catch (error) {
-			setCityData([])
+			setCityData([]);
 			console.log("FetchCityData" + error);
 		}
 	};
@@ -84,15 +88,17 @@ export default function app() {
 	}
 
 	const handleSubmit = async () => {
-		if (textInput && textInput.length > 3) {
+		if (textInput && textInput.length > 0) {
 			try {
 				const data = await fetchCityData(textInput);
+				console.log(data)
 				if (!data || !data.results || data.results.length === 0) {
 					console.log("NO DATA FOUND");
+					setCityData([]);
 				} else {
 					handleCity(data.results[0]);
 				}
-				setCityData(null);
+				// setCityData(null);
 			} catch (error) {
 				console.log("HandleSubmit error: " + error);
 			}
@@ -154,9 +160,7 @@ export default function app() {
 					name="search-sharp"
 					size={32}
 					color="black"
-					onPress={() => {
-						console.log('search pressed');
-					  }} // gérer ça
+					onPress={handleSubmit}
 				/>
 				<TextInput
 					style={styles.searchInput}
@@ -207,7 +211,9 @@ export default function app() {
 					keyExtractor={(item) => item.id.toString()}
 					renderItem={({ item }) => (
 					<TouchableOpacity onPress={() => handleCity(item)} style={styles.itemSugg}>
-						<Text style={styles.textSugg}>{item.name}, {item.country}, {item.admin1}</Text>
+						<Text style={styles.textSuggName}>{item.name}, </Text>
+						<Text style={styles.textSuggRegion}>{item.admin1}, </Text>
+						<Text style={styles.textSuggCountry}>{item.country}</Text>
 					</TouchableOpacity>
 					)}
 					style={styles.citySugg}
@@ -267,7 +273,16 @@ const styles = StyleSheet.create({
 		borderBottomColor: '#ccc',
 		borderBottomWidth: 1,
 	},
-	textSugg: {
+	textSuggName: {
+		fontSize: 24,
+		fontWeight: 'bold',
+		textAlign: 'center',
+	},
+	textSuggRegion: {
+		fontSize: 16,
+		textAlign: 'center',
+	},
+	textSuggCountry: {
 		fontSize: 16,
 		textAlign: 'center',
 	},

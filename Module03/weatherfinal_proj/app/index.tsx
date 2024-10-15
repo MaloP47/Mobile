@@ -8,6 +8,7 @@ import {
 	FlatList,
 	TouchableOpacity,
 	Platform,
+	ImageBackground,
 } from 'react-native';
 import { TabView, TabBar, SceneRendererProps, NavigationState } from 'react-native-tab-view';
 
@@ -156,82 +157,84 @@ export default function app() {
 
 	return (
 		<SafeAreaView style={ styles.safe }>
-			<View style={styles.topBar}>
-				<Ionicons
-					name="search-sharp"
-					size={32}
-					color="black"
-					onPress={handleSubmit}
-				/>
-				<TextInput
-					style={styles.searchInput}
-					cursorColor='black'
-					selectionColor={"black"}
-					placeholder='Search location...'
-					onChangeText={handleTextChange}
-					onSubmitEditing={handleSubmit}
-					maxLength={15}
-				/>
-				<Text style={{fontSize: 24, lineHeight: 20}}>|  </Text>
-				<Ionicons
-					name="location-outline"
-					size={32} color="black"
-					onPress={async () => {
-						const activated = await handleGeoLocation(firstTimeCheckGeo);
-						setFirstTimeCheckGeo(false)
-						setIsGeoLocActivated(activated)
-						if (activated) {
-							try {
-								const location = await Location.getCurrentPositionAsync();
-								if (location && location.coords) {
-									const { longitude, latitude } = location.coords;
-									setCoordinates({ longitude, latitude });
-									const reverse = await reverseLoc(location.coords.longitude, location.coords.latitude);
-									if (reverse && reverse.address) {
-										setGeoLocation(reverse);
-									} else {
-										setGeoLocation(undefined);
-										console.log("Fuck");
-									}
-								} else {
-									console.log("Problem with mobile API");
-								}
-							} catch (error) {
-								console.error('Error fetching location:', error);
-							}
-						}
-					}}
+			<ImageBackground source={require('./assets/images/bg.jpg')} resizeMode='cover'>
+				<View style={styles.topBar}>
+					<Ionicons
+						name="search-sharp"
+						size={32}
+						color="black"
+						onPress={handleSubmit}
 					/>
-			</View>
-			{cityData && (cityData.length == 0 ? (
-				<Text style={{textAlign: "center", color: 'red', alignItems: 'center', fontSize: 32}}>No data</Text>
-			)
-			: (
-				<FlatList
-					data={cityData.results}
-					keyExtractor={(item) => item.id.toString()}
-					renderItem={({ item }) => (
-					<TouchableOpacity onPress={() => handleCity(item)} style={styles.itemSugg}>
-						<Text>
-							<MaterialCommunityIcons name="home-city-outline" size={20} color="black" />
-							<Text style={styles.textSuggName}>   {item.name}, </Text>
-							<Text style={styles.textSuggRegion}>{item.admin1}, </Text>
-							<Text style={styles.textSuggCountry}>{item.country}</Text>
-						</Text>
-					</TouchableOpacity>
-					)}
-					style={styles.citySugg}
-					contentContainerStyle={styles.suggestionsContainer}
+					<TextInput
+						style={styles.searchInput}
+						cursorColor='black'
+						selectionColor={"black"}
+						placeholder='Search location...'
+						onChangeText={handleTextChange}
+						onSubmitEditing={handleSubmit}
+						maxLength={15}
+					/>
+					<Text style={{fontSize: 24, lineHeight: 20}}>|  </Text>
+					<Ionicons
+						name="location-outline"
+						size={32} color="black"
+						onPress={async () => {
+							const activated = await handleGeoLocation(firstTimeCheckGeo);
+							setFirstTimeCheckGeo(false)
+							setIsGeoLocActivated(activated)
+							if (activated) {
+								try {
+									const location = await Location.getCurrentPositionAsync();
+									if (location && location.coords) {
+										const { longitude, latitude } = location.coords;
+										setCoordinates({ longitude, latitude });
+										const reverse = await reverseLoc(location.coords.longitude, location.coords.latitude);
+										if (reverse && reverse.address) {
+											setGeoLocation(reverse);
+										} else {
+											setGeoLocation(undefined);
+											console.log("Fuck");
+										}
+									} else {
+										console.log("Problem with mobile API");
+									}
+								} catch (error) {
+									console.error('Error fetching location:', error);
+								}
+							}
+						}}
+						/>
+				</View>
+				{cityData && (cityData.length == 0 ? (
+					<Text style={{textAlign: "center", color: 'red', alignItems: 'center', fontSize: 32}}>No data</Text>
+				)
+				: (
+					<FlatList
+						data={cityData.results}
+						keyExtractor={(item) => item.id.toString()}
+						renderItem={({ item }) => (
+						<TouchableOpacity onPress={() => handleCity(item)} style={styles.itemSugg}>
+							<Text>
+								<MaterialCommunityIcons name="home-city-outline" size={20} color="black" />
+								<Text style={styles.textSuggName}>   {item.name}, </Text>
+								<Text style={styles.textSuggRegion}>{item.admin1}, </Text>
+								<Text style={styles.textSuggCountry}>{item.country}</Text>
+							</Text>
+						</TouchableOpacity>
+						)}
+						style={styles.citySugg}
+						contentContainerStyle={styles.suggestionsContainer}
+					/>
+					))}
+				<TabView
+					navigationState={{ index, routes }}
+					renderScene={renderScene}
+					onIndexChange={setIndex}
+					initialLayout={{ width: layout.width }}
+					tabBarPosition='bottom'
+					renderTabBar={renderTab}
 				/>
-				))}
-			<TabView
-				navigationState={{ index, routes }}
-				renderScene={renderScene}
-				onIndexChange={setIndex}
-				initialLayout={{ width: layout.width }}
-				tabBarPosition='bottom'
-				renderTabBar={renderTab}
-			/>
+			</ImageBackground>
 		</SafeAreaView>
   	);
 }

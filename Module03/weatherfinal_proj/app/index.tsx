@@ -23,6 +23,7 @@ import { useWeatherData } from './customHooks/useWeatherData';
 
 import * as Location from 'expo-location';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -203,7 +204,7 @@ export default function app() {
 					/>
 			</View>
 			{cityData && (cityData.length == 0 ? (
-				<Text style={{textAlign: "center", flex: 1, color: 'red', alignItems: 'center'}}>No data</Text>
+				<Text style={{textAlign: "center", color: 'red', alignItems: 'center', fontSize: 32}}>No data</Text>
 			)
 			: (
 				<FlatList
@@ -211,9 +212,12 @@ export default function app() {
 					keyExtractor={(item) => item.id.toString()}
 					renderItem={({ item }) => (
 					<TouchableOpacity onPress={() => handleCity(item)} style={styles.itemSugg}>
-						<Text style={styles.textSuggName}>{item.name}, </Text>
-						<Text style={styles.textSuggRegion}>{item.admin1}, </Text>
-						<Text style={styles.textSuggCountry}>{item.country}</Text>
+						<Text>
+							<MaterialCommunityIcons name="home-city-outline" size={20} color="black" />
+							<Text style={styles.textSuggName}>   {item.name}, </Text>
+							<Text style={styles.textSuggRegion}>{item.admin1}, </Text>
+							<Text style={styles.textSuggCountry}>{item.country}</Text>
+						</Text>
 					</TouchableOpacity>
 					)}
 					style={styles.citySugg}
@@ -274,16 +278,16 @@ const styles = StyleSheet.create({
 		borderBottomWidth: 1,
 	},
 	textSuggName: {
-		fontSize: 24,
+		fontSize: 16,
 		fontWeight: 'bold',
 		textAlign: 'center',
 	},
 	textSuggRegion: {
-		fontSize: 16,
+		fontSize: 12,
 		textAlign: 'center',
 	},
 	textSuggCountry: {
-		fontSize: 16,
+		fontSize: 12,
 		textAlign: 'center',
 	},
 	suggestionsContainer: {

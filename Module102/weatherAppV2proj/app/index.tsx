@@ -91,12 +91,10 @@ export default function app() {
 			setGeoLocation(city);
 			setTextInput('');
 			setCityData(null);
-			console.log(city);
 		} catch (error) {
 			console.log("HandleCity " + error);
 		}
 	};
-
 
 	const renderScene = ({ route }: { route: Route }) => {
 		switch (route.key) {
@@ -159,6 +157,7 @@ export default function app() {
 									setCoordinates({ longitude, latitude });
 									const reverse = await reverseLoc(location.coords.longitude, location.coords.latitude);
 									if (reverse && reverse.address) {
+										console.log(reverse);
 										setGeoLocation(reverse);
 									} else {
 										setGeoLocation(undefined);

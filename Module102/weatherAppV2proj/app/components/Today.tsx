@@ -10,16 +10,25 @@ interface Address {
 	town?: string;
 }
 
-interface CurrentlyProps {
-	location?: {
-		address?: Address;
-	};
-	weather?: any;
+interface LocationFormat1 {
+	address: Address;
 }
 
+interface LocationFormat2 {
+	name?: string;
+	admin1?: string;
+	country?: string;
+}
+
+type Location = LocationFormat1 | LocationFormat2;
+
+interface CurrentlyProps {
+	location?: Location;
+	weather?: any;
+}
 export default function Today({ location, weather }: CurrentlyProps) {
 
-	if (location === undefined) {
+	if (location === undefined|| typeof location !== 'object') {
 		return (
 			<View style={styles.container}>
 				<Text style={{fontSize:40, color:"red"}}>Problem with location</Text>
@@ -27,13 +36,31 @@ export default function Today({ location, weather }: CurrentlyProps) {
 		);
 	}
 
-	let city = location?.address?.city;
-	const state = location?.address?.state;
-	const country = location?.address?.country;
+	const getLocationDetails = (location: Location | undefined) => {
+		let city: string | undefined;
+		let state: string | undefined;
+		let country: string | undefined;
 	
-	if (!city) {
-		city = location?.address?.town;
-	}
+		if (location && typeof location === 'object') {
+			if ('address' in location && location.address) {
+				city = location.address.city || location.address.town;
+				state = location.address.state;
+				country = location.address.country;
+			} else {
+				city = 'name' in location ? location.name : undefined;
+				state = 'admin1' in location ? location.admin1 : undefined;
+				country = 'country' in location ? location.country : undefined;
+			}
+		} else {
+			city = undefined;
+			state = undefined;
+			country = undefined;
+		}
+	
+		return { city, state, country };
+	};
+
+	const { city, state, country } = getLocationDetails(location);
 
 	if (!weather || !weather.hourly || (weather.latitude != 0 && weather.longitude != 0)) {
 		return (

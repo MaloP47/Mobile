@@ -22,7 +22,7 @@ interface LocationFormat2 {
 type Location = LocationFormat1 | LocationFormat2;
 
 interface CurrentlyProps {
-	location?: Location;
+	location?: Location | null | undefined | City;
 	weather?: any;
 }
 
@@ -63,7 +63,7 @@ export default function Currently({ location, weather }: CurrentlyProps) {
 	const { city, state, country } = getLocationDetails(location);
 
 	let temperature, weatherDescription, windSpeed;
-	if (weather && weather.current && (weather.latitude == 0 && weather.longitude == 0)) {
+	if (weather && weather.current ) {
 		temperature = weather.current.temperature_2m;
 		const code = weather.current.weather_code;
   		weatherDescription = weatherDescriptions[code] || 'Unknown';

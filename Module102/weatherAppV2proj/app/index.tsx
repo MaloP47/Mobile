@@ -24,7 +24,6 @@ import { useWeatherData } from './customHooks/useWeatherData';
 import * as Location from 'expo-location';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-import { useDebounce } from 'use-debounce'
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import debounce from 'lodash.debounce';
@@ -47,24 +46,32 @@ export default function app() {
 	const [geoLocation, setGeoLocation] = useState<Location.LocationObject | City | null | undefined>(null);
 	const [firstTimeCheckGeo, setFirstTimeCheckGeo] = useState(true);
 	const [coordinates, setCoordinates] = useState<{ longitude: number; latitude: number } | null>(null);
-	const [weatherData, setWeatherData] = useState<any>(null);
-	const [errors, setErrors] = useState<string | null>(null);
 
 	const [textInput, setTextInput] = useState<string | null>(null);
-	const [cityData, setCityData] =  useState<string | null>(null);
+	const [cityData, setCityData] =  useState<string | null | any[]>(null);
 
 	const layout = useWindowDimensions();
 	const orienation = useOrientation();
+	const { weatherData, errors } = useWeatherData(coordinates?.longitude, coordinates?.latitude);
 
-	const fetchCityData = async (input: string) => {
+
+	const fetchCityData = async (input: string, isSubmit: boolean = false) => {
 		try {
-			if (input.length > 3) {
+			if (input.length > 3 || isSubmit) {
 				const data = await searchCity(input);
+				const nbRes = Object.keys(data.results).length;
+				if (nbRes < 2) {
+					return null;
+				}
 				setCityData(data);
+				console.log(data)
+				return data;
 			} else {
 				setCityData(null);
+				return null;
 			}
 		} catch (error) {
+			setCityData([])
 			console.log("FetchCityData" + error);
 		}
 	};
@@ -75,6 +82,24 @@ export default function app() {
 		setTextInput(text);
 		debounceFetch(text);
 	}
+
+	const handleSubmit = async () => {
+		if (textInput && textInput.length > 3) {
+			try {
+				const data = await fetchCityData(textInput);
+				if (!data || !data.results || data.results.length === 0) {
+					console.log("NO DATA FOUND");
+				} else {
+					handleCity(data.results[0]);
+				}
+				setCityData(null);
+			} catch (error) {
+				console.log("HandleSubmit error: " + error);
+			}
+		} else {
+			console.log("PLEASE ENTER A VALID LOCATION");
+		}
+	};
 
 	interface City {
 		id: number;
@@ -139,6 +164,7 @@ export default function app() {
 					selectionColor={"black"}
 					placeholder='Search location...'
 					onChangeText={handleTextChange}
+					onSubmitEditing={handleSubmit}
 					maxLength={15}
 				/>
 				<Text style={{fontSize: 24, lineHeight: 20}}>|  </Text>
@@ -157,7 +183,6 @@ export default function app() {
 									setCoordinates({ longitude, latitude });
 									const reverse = await reverseLoc(location.coords.longitude, location.coords.latitude);
 									if (reverse && reverse.address) {
-										console.log(reverse);
 										setGeoLocation(reverse);
 									} else {
 										setGeoLocation(undefined);
@@ -173,7 +198,10 @@ export default function app() {
 					}}
 					/>
 			</View>
-			{cityData && (
+			{cityData && (cityData.length == 0 ? (
+				<Text style={{textAlign: "center", flex: 1, color: 'red', alignItems: 'center'}}>No data</Text>
+			)
+			: (
 				<FlatList
 					data={cityData.results}
 					keyExtractor={(item) => item.id.toString()}
@@ -185,7 +213,7 @@ export default function app() {
 					style={styles.citySugg}
 					contentContainerStyle={styles.suggestionsContainer}
 				/>
-				)}
+				))}
 			<TabView
 				navigationState={{ index, routes }}
 				renderScene={renderScene}
@@ -229,7 +257,7 @@ const styles = StyleSheet.create({
 		backgroundColor: 'pink',
 		position: 'absolute',
 		width: "100%",
-		top: 55,
+		top: 50,
 		zIndex: 1,
 		borderColor: '#ccc',
 		borderWidth: 1,

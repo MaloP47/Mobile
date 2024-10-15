@@ -23,7 +23,7 @@ interface LocationFormat2 {
 type Location = LocationFormat1 | LocationFormat2;
 
 interface CurrentlyProps {
-	location?: Location;
+	location?: Location | null | undefined | City;
 	weather?: any;
 }
 export default function Today({ location, weather }: CurrentlyProps) {
@@ -62,7 +62,7 @@ export default function Today({ location, weather }: CurrentlyProps) {
 
 	const { city, state, country } = getLocationDetails(location);
 
-	if (!weather || !weather.hourly || (weather.latitude != 0 && weather.longitude != 0)) {
+	if (!weather || !weather.hourly) {
 		return (
 			<View style={styles.container}>
 				<Text style={styles.location}>{city ? city : "Edit location"}</Text>

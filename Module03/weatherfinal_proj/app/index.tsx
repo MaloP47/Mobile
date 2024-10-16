@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
 	View,
 	useWindowDimensions,
@@ -100,7 +100,6 @@ export default function app() {
 				} else {
 					handleCity(data.results[0]);
 				}
-				// setCityData(null);
 			} catch (error) {
 				console.log("HandleSubmit error: " + error);
 			}
@@ -145,39 +144,39 @@ export default function app() {
   	const renderTab = (props: SceneRendererProps & { navigationState: NavigationState<Route> }) => (
     	<TabBar {...props}
 			renderIcon={({ route }) => (
-				<Ionicons name={route.icon as any} size={24} color="black" />
+				<Ionicons name={route.icon as any} size={35} color="white" />
 			)}
 			renderLabel={({ route, focused }) => (
 				<Text style={styles.label} numberOfLines={2} >{route.title}</Text>
 			)}
-			indicatorStyle={{ backgroundColor: 'grey', height: 5}}
+			indicatorStyle={{ backgroundColor: 'white', height: 5,}}
 			style={styles.barTab}
 		/>
   	);
 
 	return (
 		<SafeAreaView style={ styles.safe }>
-			<ImageBackground source={require('./assets/images/bg.jpg')} resizeMode='cover'>
+			<ImageBackground source={require('../assets/images/blue.jpg')} style={{zIndex: -1000, flex: 1}}>
 				<View style={styles.topBar}>
 					<Ionicons
 						name="search-sharp"
-						size={32}
-						color="black"
+						size={40}
+						color="white"
 						onPress={handleSubmit}
 					/>
 					<TextInput
 						style={styles.searchInput}
-						cursorColor='black'
-						selectionColor={"black"}
+						cursorColor='white'
+						selectionColor={"white"}
 						placeholder='Search location...'
 						onChangeText={handleTextChange}
 						onSubmitEditing={handleSubmit}
 						maxLength={15}
 					/>
-					<Text style={{fontSize: 24, lineHeight: 20}}>|  </Text>
+					<Text style={{fontSize: 24, lineHeight: 20, color: 'white'}}>|  </Text>
 					<Ionicons
 						name="location-outline"
-						size={32} color="black"
+						size={32} color="white"
 						onPress={async () => {
 							const activated = await handleGeoLocation(firstTimeCheckGeo);
 							setFirstTimeCheckGeo(false)
@@ -233,6 +232,7 @@ export default function app() {
 					initialLayout={{ width: layout.width }}
 					tabBarPosition='bottom'
 					renderTabBar={renderTab}
+					style={{borderColor: "yellow"}}
 				/>
 			</ImageBackground>
 		</SafeAreaView>
@@ -247,38 +247,39 @@ const styles = StyleSheet.create({
         paddingBottom: -50,
 	},
 	barTab: {
-		backgroundColor: 'white',
+		backgroundColor: 'transparent',
 	},
 	searchInput: {
 		flex: 1,
-		color: 'black',
+		color: 'white',
 	},
 	topBar: {
 		flexDirection: 'row',
     	alignItems: 'center',
     	paddingHorizontal: 10,
     	height: 50,
-    	backgroundColor: 'grey',
+    	backgroundColor: 'transparent',
 	},
 	label: {
-		color: 'black',
+		color: 'white',
 		textTransform: 'none',
+		fontSize: 16,
 		textAlign: 'center',
 		flexWrap: 'wrap',
 	},
 	citySugg: {
-		backgroundColor: 'pink',
+		backgroundColor: 'white',
 		position: 'absolute',
 		width: "100%",
 		top: 50,
 		zIndex: 1,
-		borderColor: '#ccc',
+		// borderColor: 'red',
 		borderWidth: 1,
 	},
 	itemSugg: {
 		padding: 10,
-		borderBottomColor: '#ccc',
-		borderBottomWidth: 1,
+		borderBottomColor: 'black',
+		borderBottomWidth: 3,
 	},
 	textSuggName: {
 		fontSize: 16,

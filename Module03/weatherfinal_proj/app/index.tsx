@@ -168,7 +168,8 @@ export default function app() {
 						style={styles.searchInput}
 						cursorColor='white'
 						selectionColor={"white"}
-						placeholder='Search location...'
+						placeholder=' Search location...'
+						placeholderTextColor={"white"}
 						onChangeText={handleTextChange}
 						onSubmitEditing={handleSubmit}
 						maxLength={15}

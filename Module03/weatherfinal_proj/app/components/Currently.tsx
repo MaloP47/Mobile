@@ -1,6 +1,7 @@
 import { Text, StyleSheet, View } from 'react-native'
 import React from 'react'
 import { weatherDescriptions } from '../utils/weatherCodes';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 interface Address {
 	city?: string;
@@ -81,12 +82,21 @@ export default function Currently({ location, weather }: CurrentlyProps) {
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.location}>{city ? city : "Edit location"}</Text>
-			<Text style={styles.region}>{state || ""}</Text>
-			<Text style={styles.country}>{country || ""}</Text>
-			<Text style={styles.temperature}>{temperature + "°C"|| ""}</Text>
-			<Text style={styles.weatherDescription}>{weatherDescription || ""}</Text>
-			<Text style={styles.windSpeed}>{windSpeed + " km/h"|| ""}</Text>
+			<View style={styles.locationBlock}>
+				<Text style={styles.location}>{city ? city : "Edit location"}</Text>
+				<Text style={styles.region}>{state || ""}</Text>
+				<Text style={styles.country}>{country || ""}</Text>
+			</View>
+			<View style={styles.tempBlock}>
+				<Text style={styles.temperature}>{temperature + "°C"|| ""}</Text>
+			</View>
+			<View style={styles.weatherBlock}>
+				<MaterialCommunityIcons name="weather-cloudy" size={100} color="grey" />
+				<Text style={styles.weatherDescription}>{weatherDescription || ""}</Text>
+			</View>
+			<View style={styles.windBlock}>
+				<Text style={styles.windSpeed}>{<MaterialCommunityIcons name="weather-windy" size={20} color="turquoise" />} {windSpeed + " km/h"|| ""}</Text>
+			</View>
 		</View>
 	);
 }
@@ -95,30 +105,53 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		alignItems: "center",
-		justifyContent: "center"
+		justifyContent: "center",
+		flexDirection: 'column',
 	},
 	location: {
 		fontSize: 36,
+		color: "blue",
 		textAlign: 'center',
 	},
 	region: {
 		fontSize: 20,
+		color: 'white',
 		textAlign: 'center',
 	},
 	country: {
 		fontSize: 20,
+		color: 'white',
 		textAlign: 'center',
 	},
 	temperature: {
-		fontSize: 24,
+		fontSize: 40,
+		color: "orange",
 		textAlign: 'center',
 	},
 	weatherDescription: {
 		fontSize: 24,
+		color: 'white',
 		textAlign: 'center',
 	},
 	windSpeed: {
 		fontSize: 24,
+		color: 'white',
 		textAlign: 'center',
+	},
+	locationBlock: {
+		// backgroundColor: 'yellow',
+		flex: 3,
+	},
+	tempBlock: {
+		// backgroundColor: 'yellow',
+		flex: 1,
+	},
+	weatherBlock: {
+		// backgroundColor: 'yellow',
+		flex: 3,
+	},
+	windBlock: {
+		// backgroundColor: 'yellow',
+		flex: 3,
 	},
 });

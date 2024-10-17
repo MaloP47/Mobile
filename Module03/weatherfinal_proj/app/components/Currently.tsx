@@ -1,7 +1,9 @@
 import { Text, StyleSheet, View } from 'react-native'
 import React from 'react'
 import { weatherDescriptions } from '../utils/weatherCodes';
+import { weatherIcons } from '../utils/weatherIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { getTemperatureColor, getWindSpeedColor, getWeatherIconColor } from '../utils/dynamicCSS';
 
 interface Address {
 	city?: string;
@@ -63,12 +65,13 @@ export default function Currently({ location, weather }: CurrentlyProps) {
 
 	const { city, state, country } = getLocationDetails(location);
 
-	let temperature, weatherDescription, windSpeed;
+	let temperature: number | undefined, weatherDescription: string | undefined, windSpeed: number | undefined, iconName: keyof typeof MaterialCommunityIcons.glyphMap | undefined;
 	if (weather && weather.current ) {
 		temperature = weather.current.temperature_2m;
 		const code = weather.current.weather_code;
   		weatherDescription = weatherDescriptions[code] || 'Unknown';
 		windSpeed = weather.current.wind_speed_10m;
+		iconName = weatherIcons[code] as keyof typeof MaterialCommunityIcons.glyphMap || "weather-sunny-off";
 	} else {
 		return (
 			<View style={styles.container}>
@@ -88,14 +91,14 @@ export default function Currently({ location, weather }: CurrentlyProps) {
 				<Text style={styles.country}>{country || ""}</Text>
 			</View>
 			<View style={styles.tempBlock}>
-				<Text style={styles.temperature}>{temperature + "°C"|| ""}</Text>
+				<Text style={[styles.temperature, { color: getTemperatureColor(temperature) }]}>{temperature + "°C"|| ""}</Text>
 			</View>
 			<View style={styles.weatherBlock}>
-				<MaterialCommunityIcons name="weather-cloudy" size={100} color="grey" />
-				<Text style={styles.weatherDescription}>{weatherDescription || ""}</Text>
+				<Text style={[styles.weatherDescription, { color: getWeatherIconColor(weather?.current?.weather_code) }]}>{weatherDescription || ""}</Text>
+				<MaterialCommunityIcons name={iconName} size={100} color={getWeatherIconColor(weather?.current?.weather_code)} />
 			</View>
 			<View style={styles.windBlock}>
-				<Text style={styles.windSpeed}>{<MaterialCommunityIcons name="weather-windy" size={20} color="turquoise" />} {windSpeed + " km/h"|| ""}</Text>
+				<Text style={[styles.windSpeed, { color: getWindSpeedColor(windSpeed) }]}>{<MaterialCommunityIcons name="weather-windy" size={20} color="turquoise" />} {windSpeed + " km/h"|| ""}</Text>
 			</View>
 		</View>
 	);
@@ -109,28 +112,27 @@ const styles = StyleSheet.create({
 		flexDirection: 'column',
 	},
 	location: {
-		fontSize: 36,
-		color: "blue",
+		fontSize: 30,
+		color: "white",
 		textAlign: 'center',
 	},
 	region: {
-		fontSize: 20,
+		fontSize: 12,
 		color: 'white',
 		textAlign: 'center',
 	},
 	country: {
-		fontSize: 20,
+		fontSize: 16,
 		color: 'white',
 		textAlign: 'center',
 	},
 	temperature: {
 		fontSize: 40,
-		color: "orange",
 		textAlign: 'center',
 	},
 	weatherDescription: {
-		fontSize: 24,
-		color: 'white',
+		fontSize: 18,
+		// color: 'white',
 		textAlign: 'center',
 	},
 	windSpeed: {
@@ -139,19 +141,39 @@ const styles = StyleSheet.create({
 		textAlign: 'center',
 	},
 	locationBlock: {
-		// backgroundColor: 'yellow',
-		flex: 3,
+		// backgroundColor: 'pink',
+		flex: 1,
+		justifyContent: 'center',
+		flexShrink: 3,
 	},
 	tempBlock: {
 		// backgroundColor: 'yellow',
 		flex: 1,
+		justifyContent: 'center',
+		flexShrink: 1,
 	},
 	weatherBlock: {
-		// backgroundColor: 'yellow',
-		flex: 3,
+		// backgroundColor: 'green',
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		flexShrink: 1,
 	},
 	windBlock: {
-		// backgroundColor: 'yellow',
-		flex: 3,
+		// backgroundColor: 'blue',
+		flex: 1,
+		justifyContent: 'center',
+		height: 50,
+		flexShrink: 3,
 	},
 });
+
+
+
+
+{/* <View style={styles.infoBlock}>
+<Text style={styles.temperature}>{temperature + "°C"|| ""}</Text>
+<Text style={styles.weatherDescription}>{weatherDescription || ""}</Text>
+<MaterialCommunityIcons name="weather-cloudy" size={100} color="turquoise" />
+<Text style={styles.windSpeed}>{<MaterialCommunityIcons name="weather-windy" size={20} color="turquoise" />} {windSpeed + " km/h"|| ""}</Text>
+</View> */}

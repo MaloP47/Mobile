@@ -65,7 +65,7 @@ export const fullMeteo = async (longitude: number, latitude: number) => {
 
 export const searchCity = async (input: string) => {
 	try {
-		const url = `https://geocoding-api.open-meteo.com/v1/search?name=${input}&count=5&language=fr&format=json`
+		const url = `https://geocoding-api.open-meteo.com/v1/search?name=${input}&count=5&language=en&format=json`
 		const response = await axios.get(url);
 		return response?.data;
 	} catch (error) {

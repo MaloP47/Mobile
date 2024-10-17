@@ -1,7 +1,11 @@
-import { Text, StyleSheet, View, FlatList } from 'react-native'
+import { Text, StyleSheet, View, FlatList, Dimensions, ScrollView } from 'react-native'
 import React from 'react'
 import { weatherDescriptions } from '../utils/weatherCodes';
 import stringToTime from '../utils/stringToTime';
+import { LineChart } from "react-native-chart-kit";
+import { weatherIcons } from '../utils/weatherIcons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { getTemperatureColor, getWindSpeedColor, getWeatherIconColor } from '../utils/dynamicCSS';
 
 interface Address {
 	city?: string;
@@ -82,29 +86,87 @@ export default function Today({ location, weather }: CurrentlyProps) {
 	const DATA = timeArray.map((time: string, index: number) => ({
 		formattedTime: stringToTime(time, 2), 
 		temperature: temperatureArray[index],
-		weatherCode: weatherDescriptions[weatherCodeArray[index]] || "Unknown",
+		weatherDescription: weatherDescriptions[weatherCodeArray[index]] || "Unknown",
 		windSpeed: windSpeedArray[index],
+		weatherCode: weatherCodeArray[index],
+		iconName: weatherIcons[weatherCodeArray[index]] || "weather-sunny-off",
 	}));
 
+	const labels = DATA.map((item: { formattedTime: string }) => item.formattedTime);
+	const data = DATA.map((item: { formattedTime: string; temperature: number; weatherCode: string; windSpeed: number }) => item.temperature);
+
+	const adjustedLabels = labels.map((label: string, index: number) => {
+		if (index % 2 === 0) {
+			return label;
+		} else {
+			return "";
+		}
+	});
 
 	return (
-		<View style={styles.container}>
-			<Text style={styles.location}>{city ? city : "Edit location"}</Text>
-			<Text style={styles.region}>{state || ""}</Text>
-			<Text style={styles.country}>{country || ""}</Text>
-			<FlatList
-				data={DATA}
-				keyExtractor={(item, index) => index.toString()}
-				renderItem={({ item }) =>
-					<View style={styles.list}>
-						<Text style={styles.time}>{item.formattedTime}</Text>
-						<Text style={styles.temperature}>{item.temperature + "°C"}</Text>
-						<Text style={styles.weatherDescription}>{item.weatherCode}</Text>
-						<Text style={styles.windSpeed}>{item.windSpeed + " km/h"}</Text>
-					</View>
-				}
-			/>
-		</View>
+		<ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
+			<View style={styles.container}>
+				<View style={{flex:1, alignItems: "center", justifyContent: "center"}}>
+					<Text style={styles.location}>{city ? city : "Edit location"}</Text>
+					<Text style={styles.region}>{state || ""}</Text>
+					<Text style={styles.country}>{country || ""}</Text>
+				</View>
+				<View style={{flex: 1}}>
+					<Text style={{color: 'orange', textAlign: 'center'}}>Hourly temperatures</Text>
+					<LineChart
+						data={{
+						labels: adjustedLabels,
+						datasets: [
+							{
+								data: data
+							}
+						]
+						}}
+						width={Dimensions.get("window").width} // from react-native
+						height={220}
+						// yAxisLabel="$"
+						yAxisSuffix="°C"
+						yAxisInterval={1} // optional, defaults to 1
+						chartConfig={{
+						backgroundColor: "#e26a00",
+						backgroundGradientFrom: "#fb8c00",
+						backgroundGradientTo: "#ffa726",
+						decimalPlaces: 1, // optional, defaults to 2dp
+						color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+						labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+						style: {
+							borderRadius: 16
+						},
+						propsForDots: {
+							r: "6",
+							strokeWidth: "2",
+							stroke: "#ffa726"
+						}
+						}}
+						bezier
+						style={{
+						marginVertical: 8,
+						borderRadius: 16
+						}}
+					/>
+				</View>
+				<FlatList
+					data={DATA}
+					keyExtractor={(item, index) => index.toString()}
+					horizontal={true}
+					showsHorizontalScrollIndicator={true}
+					renderItem={({ item }) =>
+						<View style={styles.list}>
+							<Text style={styles.time}>{item.formattedTime}</Text>
+							<MaterialCommunityIcons name={item.iconName} size={50} color={getWeatherIconColor(item.weatherCode)} />
+							<Text style={[styles.temperature, { color: getTemperatureColor(item.temperature) }]}>{item.temperature + "°C"|| ""}</Text>
+							<Text style={[styles.windSpeed, { color: getWindSpeedColor(item.windSpeed) }]}>{<MaterialCommunityIcons name="weather-windy" size={10} color="turquoise" />} {item.windSpeed + " km/h"|| ""}</Text>
+
+						</View>
+					}
+				/>
+			</View>
+		</ScrollView>
 	);
 }
 
@@ -116,39 +178,38 @@ const styles = StyleSheet.create({
 	},
 	location: {
 		fontSize: 32,
+		color: 'white',
 		textAlign: 'center',
 	},
 	region: {
-
+		color: 'white',
 	},
 	country: {
-
+		color: 'white',
 	},
 	list: {
-		flexDirection: "row",
-		justifyContent: "space-evenly",
-		alignItems: "center",
-		width: "100%",
-		paddingVertical: 10,
-		backgroundColor: 'pink',
-		marginVertical: 2,
-		height: 70,
-		alignSelf: 'center',
+		width: 100, // Ajustez la largeur selon vos besoins
+		height: 100, // Ajustez la hauteur selon vos besoins
+  		justifyContent: 'center',
+  		alignItems: 'center',
+  		// backgroundColor: 'pink',
+  		marginHorizontal: 5, // Ajoute de l'espace entre les éléments
 	},
 	time: {
-		width: '20%',
+		// width: '20%',
     	textAlign: 'center',
+		color: "white",
 	},
 	temperature: {
-		width: '20%',
+		// width: '20%',
     	textAlign: 'center'
 	},
 	weatherDescription: {
-		width: '20%',
+		// width: '20%',
     	textAlign: 'center'
 	},
 	windSpeed: {
-		width: '20%',
+		// width: '20%',
     	textAlign: 'center'
 	},
 });

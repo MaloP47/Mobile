@@ -1,4 +1,4 @@
-import { Text, StyleSheet, View } from 'react-native'
+import { Text, StyleSheet, View, ScrollView } from 'react-native'
 import React from 'react'
 import { weatherDescriptions } from '../utils/weatherCodes';
 import { weatherIcons } from '../utils/weatherIcons';
@@ -84,32 +84,36 @@ export default function Currently({ location, weather }: CurrentlyProps) {
 	}
 
 	return (
-		<View style={styles.container}>
-			<View style={styles.locationBlock}>
-				<Text style={styles.location}>{city ? city : "Edit location"}</Text>
-				<Text style={styles.region}>{state || ""}</Text>
-				<Text style={styles.country}>{country || ""}</Text>
+		<ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
+			<View style={styles.container}>
+				<View style={styles.locationBlock}>
+					<Text style={styles.location}>{city ? city : "Edit location"}</Text>
+					<Text style={styles.region}>{state || ""}</Text>
+					<Text style={styles.country}>{country || ""}</Text>
+				</View>
+				<View style={styles.tempBlock}>
+					<Text style={[styles.temperature, { color: getTemperatureColor(temperature) }]}>{temperature + "°C"|| ""}</Text>
+				</View>
+				<View style={styles.weatherBlock}>
+					<Text style={[styles.weatherDescription, { color: getWeatherIconColor(weather?.current?.weather_code) }]}>{weatherDescription || ""}</Text>
+					<MaterialCommunityIcons name={iconName} size={100} color={getWeatherIconColor(weather?.current?.weather_code)} />
+				</View>
+				<View style={styles.windBlock}>
+					<Text style={[styles.windSpeed, { color: getWindSpeedColor(windSpeed) }]}>{<MaterialCommunityIcons name="weather-windy" size={20} color="turquoise" />} {windSpeed + " km/h"|| ""}</Text>
+				</View>
 			</View>
-			<View style={styles.tempBlock}>
-				<Text style={[styles.temperature, { color: getTemperatureColor(temperature) }]}>{temperature + "°C"|| ""}</Text>
-			</View>
-			<View style={styles.weatherBlock}>
-				<Text style={[styles.weatherDescription, { color: getWeatherIconColor(weather?.current?.weather_code) }]}>{weatherDescription || ""}</Text>
-				<MaterialCommunityIcons name={iconName} size={100} color={getWeatherIconColor(weather?.current?.weather_code)} />
-			</View>
-			<View style={styles.windBlock}>
-				<Text style={[styles.windSpeed, { color: getWindSpeedColor(windSpeed) }]}>{<MaterialCommunityIcons name="weather-windy" size={20} color="turquoise" />} {windSpeed + " km/h"|| ""}</Text>
-			</View>
-		</View>
+		</ScrollView>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
+		// backgroundColor: "red",
 		flex: 1,
 		alignItems: "center",
 		justifyContent: "center",
-		flexDirection: 'column',
+		// width: "auto",
+		// flexDirection: 'column',
 	},
 	location: {
 		fontSize: 30,
@@ -142,26 +146,23 @@ const styles = StyleSheet.create({
 	},
 	locationBlock: {
 		// backgroundColor: 'pink',
-		flex: 1,
+		// flex: 1,
 		justifyContent: 'center',
-		flexShrink: 3,
 	},
 	tempBlock: {
 		// backgroundColor: 'yellow',
-		flex: 1,
+		// flex: 1,
 		justifyContent: 'center',
-		flexShrink: 1,
 	},
 	weatherBlock: {
 		// backgroundColor: 'green',
-		flex: 1,
+		// flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
-		flexShrink: 1,
 	},
 	windBlock: {
 		// backgroundColor: 'blue',
-		flex: 1,
+		// flex: 1,
 		justifyContent: 'center',
 		height: 50,
 		flexShrink: 3,

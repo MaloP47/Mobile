@@ -1,126 +1,64 @@
-// import { Text, View } from "react-native";
+import {View, Text, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
+import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 
-// export default function Index() {
-//   return (
-//     <View
-//       style={{
-//         flex: 1,
-//         justifyContent: "center",
-//         alignItems: "center",
-//       }}
-//     >
-//       <Text>Edit app/index.tsx to edit this screen.</Text>
-//     </View>
-//   );
-// }
-
-// import { StyleSheet, Text, View, TouchableOpacity} from "react-native";
-// import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-// import app from "../firebaseConfig.js";
-
-// export default function App() {
-//     function signUp() {
-//         const auth = getAuth(app);
-
-//         createUserWithEmailAndPassword(
-//             auth,
-//             "jane.doe@example.com",
-//             "SuperSecretPassword!"
-//         )
-//             .then((res) => console.log(res))
-//             .catch((err) => console.log(err));
-            
-//     }
-
-//     return (
-//         <View style={styles.container}>
-//             <Text style={styles.text}>Check For Firebase Integration!</Text>
-
-//                 <TouchableOpacity style={styles.button_container} onPress={signUp}>
-//                 <Text style={styles.button_text}>SignUp</Text>
-//             </TouchableOpacity>
-//         </View>
-//     );
-// }
-
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         justifyContent: "center",
-//         marginTop: 48,
-//     },
-//     text: {
-//         fontWeight:"bold",
-//         textAlign:"center",
-//         fontSize:24,
-//     },
-//     button_text: {
-//         textAlign:"center",
-//         fontSize:24,
-//         color:"#1976d2"
-//     },
-//     button_container: {
-//         borderRadius: 15,
-//         flexDirection: "row",
-//         margin: 16,
-//         padding:24,
-//         justifyContent:"center",
-//         backgroundColor:"#e6e6e6"
-//     },
-// });
-
-import React, { useState, useEffect } from 'react';
-import { View, Text } from 'react-native';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import app from '../firebaseConfig.js';
-
-export default function App() {
-  // Set an initializing state whilst Firebase connects
-  const [initializing, setInitializing] = useState(true);
-  const [user, setUser] = useState();
-
-  // Handle user state changes
-  function onAuthStateChanged(user) {
-    setUser(user);
-    if (initializing) setInitializing(false);
-  }
-
-      const auth = getAuth(app);
-      const subscriber = onAuthStateChanged(auth, onAuthStateChanged);
-  
-      return subscriber; // unsubscribe on unmount
-    }, []);
-  
-    if (initializing) return null;
-  
-    if (!user) {
-      return (
-        <View>
-          <Text>Login</Text>
-        </View>
-      );
-    }
-  
-    return (
-      <View>
-        <Text>Welcome {user.email}</Text>
-      </View>
-    );
-  }
-
-  if (initializing) return null;
-
-  if (!user) {
-    return (
-      <View>
-        <Text>Login</Text>
-      </View>
-    );
-  }
-
-  return (
-    <View>
-      <Text>Welcome {user.email}</Text>
-    </View>
-  );
+export default function HomeScreen() {
+	return (
+		<ImageBackground resizeMode="cover" source={require('@/assets/images/golden.png')} style={styles.imgBg} >
+			<View style={styles.central}>
+				<Text style={styles.textOne}>Welcome to your</Text>
+				<Text style={styles.textTwo}>Diary</Text>
+				<View style={styles.buttonZone}>
+					<TouchableOpacity style={styles.loginButtonGoogle}>
+						<Text style={styles.buttonTxt}><SimpleLineIcons name="social-google" size={35} color="black" /></Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={styles.loginButtonGithub}>
+						<Text style={styles.buttonTxt}><SimpleLineIcons name="social-github" size={35} color="black" /></Text>
+					</TouchableOpacity>
+				</View>
+			</View>
+		</ImageBackground>
+	);
 }
+
+const styles = StyleSheet.create({
+	imgBg: {
+		flex: 1,
+	},
+	central: { //?? Need to space a bit things
+		flex: 1,
+		flexDirection: "column",
+		justifyContent: "center",
+		alignItems: "center",
+		alignContent: "space-between",
+		// backgroundColor: "blue",
+	},
+	textOne: {
+		color: "blue",
+		fontSize: 36,
+		fontFamily: "Pacifico",
+		backgroundColor: "orange",
+	},
+	textTwo: {
+		color: "red",
+		fontSize: 36,
+		fontFamily: "Pacifico",
+		backgroundColor: "yellow",
+	},
+	buttonZone: {
+		backgroundColor: "green",
+		flexDirection: "row",
+	},
+	loginButtonGoogle: {
+		backgroundColor: "pink",
+		marginHorizontal: 15,
+	},
+	loginButtonGithub: {
+		backgroundColor: "pink",
+		marginHorizontal: 15,
+	},
+	buttonTxt: {
+		color: "green",
+		fontSize: 36,
+		fontFamily: "",
+	},
+});

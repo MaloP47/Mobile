@@ -13,7 +13,8 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    Pacifico: require('../assets/fonts/Pacifico-Regular.ttf'),
+	Pacifico: require('../assets/fonts/Pacifico-Regular.ttf'),
+	MsMadi: require('../assets/fonts/MsMadi-Regular.ttf'),
   });
 
   useEffect(() => {

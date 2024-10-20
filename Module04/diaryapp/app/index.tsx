@@ -3,8 +3,8 @@ import {View, Text, StyleSheet, ImageBackground, TouchableOpacity, Animated } fr
 
 export default function HomeScreen() {
 
-	const scaleAnimation = useRef(new Animated.Value(1)).current; // Valeur initiale de l'échelle
-	const colorAnimation = useRef(new Animated.Value(0)).current; // Valeur initiale pour la couleur
+	const scaleAnimation = useRef(new Animated.Value(1)).current;
+	const colorAnimation = useRef(new Animated.Value(0)).current;
 	const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
   
 	useEffect(() => {

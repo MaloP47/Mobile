@@ -1,50 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import {View, Text, StyleSheet, ImageBackground, TouchableOpacity, Animated } from 'react-native';
+import { useButtonAnimation } from '../hooks/useButtonAnimation';
 
 export default function HomeScreen() {
 
-	const scaleAnimation = useRef(new Animated.Value(1)).current;
-	const colorAnimation = useRef(new Animated.Value(0)).current;
-	const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
-  
-	useEffect(() => {
-	  // Animation pour l'effet heartbeat
-	  Animated.loop(
-		Animated.sequence([
-		  Animated.timing(scaleAnimation, {
-			toValue: 1.1, // Augmente légèrement la taille
-			duration: 300, // Durée pour le battement vers l'extérieur
-			useNativeDriver: true,
-		  }),
-		  Animated.timing(scaleAnimation, {
-			toValue: 1, // Retourne à la taille normale
-			duration: 300, // Durée pour le retour
-			useNativeDriver: true,
-		  }),
-		])
-	  ).start();
-  
-	  // Animation de changement de couleur
-	  Animated.loop(
-		Animated.sequence([
-		  Animated.timing(colorAnimation, {
-			toValue: 1,
-			duration: 800, // Changement vers un jaune plus foncé
-			useNativeDriver: false,
-		  }),
-		  Animated.timing(colorAnimation, {
-			toValue: 0,
-			duration: 800, // Retour à un jaune plus clair
-			useNativeDriver: false,
-		  }),
-		])
-	  ).start();
-	}, [scaleAnimation, colorAnimation]);
-  
-	const backgroundColor = colorAnimation.interpolate({
-	  inputRange: [0, 1],
-	  outputRange: ['#FFD700', '#FFA500'], // Différentes nuances de jaune
-	});
+	const { AnimatedTouchableOpacity, backgroundColor, scaleAnimation } = useButtonAnimation();
 
 	return (
 		<ImageBackground resizeMode="cover" source={require('@/assets/images/golden.png')} style={styles.imgBg} >

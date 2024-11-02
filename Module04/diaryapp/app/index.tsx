@@ -7,17 +7,15 @@ export default function HomeScreen() {
 	const { AnimatedTouchableOpacity, backgroundColor, scaleAnimation } = useButtonAnimation();
 
 	return (
-		<ImageBackground resizeMode="cover" source={require('@/assets/images/golden.png')} style={styles.imgBg} >
-			<View style={styles.central}>
-				<Text style={styles.textOne}>Welcome To Your</Text>
-				<Text style={styles.textTwo}>Diary</Text>
-				<View style={styles.buttonZone}>
-					<AnimatedTouchableOpacity style={[styles.buttonLogin, {backgroundColor}]} onPress={() => console.log("Login")}>
-						<Text style={styles.buttonTxt}>Login</Text>
-					</AnimatedTouchableOpacity>
-				</View>
-			</View>
-		</ImageBackground>
+        <View style={styles.central}>
+            <Text style={styles.textOne}>Welcome To Your</Text>
+            <Text style={styles.textTwo}>Diary</Text>
+            <View style={styles.buttonZone}>
+                <AnimatedTouchableOpacity style={[styles.buttonLogin, {backgroundColor}]} onPress={() => console.log("Login")}>
+                    <Text style={styles.buttonTxt}>Login</Text>
+                </AnimatedTouchableOpacity>
+            </View>
+        </View>
 	);
 }
 

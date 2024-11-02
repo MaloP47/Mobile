@@ -5,7 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
-
+import { ImageBackground } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider } from '@/context/auth';
 
@@ -31,12 +31,14 @@ export default function RootLayout() {
 
   return (
 	<>
-		<StatusBar style="dark"/>
-		<ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-			<AuthProvider>
-				<Slot />
-			</AuthProvider>
-		</ThemeProvider>
+        <ImageBackground resizeMode="cover" source={require('@/assets/images/golden.png')} style={{flex: 1}} >
+            <StatusBar style="dark"/>
+            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                <AuthProvider>
+                    <Slot />
+                </AuthProvider>
+            </ThemeProvider>
+        </ImageBackground>
 	</>
   );
 }

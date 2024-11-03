@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "pink"
+        "backgroundColor": "#FFA500"
       },
       "package": "fr.ft.diaryapp"
     },

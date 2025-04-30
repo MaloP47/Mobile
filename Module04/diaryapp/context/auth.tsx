@@ -63,7 +63,7 @@ function useProtectedRoute(user: User) {
 			router.replace("/(auth)/signIn");
 			setHasNavigated(true);
 		} else if (user.uid && inAuthGroup) {
-			router.replace("/(tabs)");
+			router.replace("/(tabs)/profile");
 			setHasNavigated(true);
 		}
 
@@ -90,7 +90,7 @@ export function AuthProvider({children}: React.PropsWithChildren):JSX.Element {
 				};
 				console.log(user);
 				setUser(dataWeCareAbout);
-				router.replace("/(tabs)");
+				router.replace("/(tabs)/profile");
 			} else {
 				console.log("user is not authenticated");
 				router.replace("/(auth)/signIn");

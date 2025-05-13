@@ -4,7 +4,7 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
@@ -42,7 +42,29 @@ export default function RootLayout() {
       <StatusBar style="dark" />
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <AuthProvider>
-          <Slot />
+          <Stack.Screen
+            name="(protected)"
+            options={{
+              headerShown: false,
+              animation: "none",
+            }}
+          />
+          <Stack>
+            <Stack.Screen
+              name="login"
+              options={{
+                headerShown: false,
+                animation: "none",
+              }}
+            />
+            <Stack.Screen
+              name="loginProvider"
+              options={{
+                headerShown: false,
+                animation: "none",
+              }}
+            />
+          </Stack>
         </AuthProvider>
       </ThemeProvider>
     </ImageBackground>

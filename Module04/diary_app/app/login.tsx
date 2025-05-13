@@ -1,31 +1,34 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-} from "react-native";
+import React, { useContext } from "react";
+import { View, Text, StyleSheet, ImageBackground} from "react-native";
 import { useButtonAnimation } from "../components/useButtonAnimation";
+import { AuthContext } from "@/context/auth";
 import { router } from "expo-router";
+export default function LoginScreen() {
+  const { AnimatedTouchableOpacity, backgroundColor } = useButtonAnimation();
 
-export default function HomeScreen() {
-  const { AnimatedTouchableOpacity, backgroundColor } =
-    useButtonAnimation();
 
   return (
-    <View style={styles.central}>
-      <Text style={styles.textOne}>Welcome To Your</Text>
-      <Text style={styles.textTwo}>Diary</Text>
-      <View style={styles.buttonZone}>
-        <AnimatedTouchableOpacity
-          style={[styles.buttonLogin, { backgroundColor }]}
-          onPress={() => {
-            console.log("Login");
-          }}
-        >
-          <Text style={styles.buttonTxt}>Login</Text>
-        </AnimatedTouchableOpacity>
+    <ImageBackground
+      resizeMode="cover"
+      source={require("@/assets/images/golden.png")}
+      style={{ flex: 1 }}
+    >
+      <View style={styles.central}>
+        <Text style={styles.textOne}>Welcome To Your</Text>
+        <Text style={styles.textTwo}>Diary</Text>
+        <View style={styles.buttonZone}>
+          <AnimatedTouchableOpacity
+            style={[styles.buttonLogin, { backgroundColor }]}
+            onPress={() => {
+              console.log("Login");
+              router.push("/loginProvider");
+            }}
+          >
+            <Text style={styles.buttonTxt}>Login</Text>
+          </AnimatedTouchableOpacity>
+        </View>
       </View>
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -70,13 +73,13 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontFamily: "Pacifico",
     textAlign: "center",
-    lineHeight: 40,
+    lineHeight: 50,
   },
   buttonLogin: {
     backgroundColor: "#FFD700",
     borderRadius: 25,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

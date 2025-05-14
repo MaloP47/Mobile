@@ -15,8 +15,6 @@ export const supabase = createClient(
   }
 );
 
-
-// Types for diary entries
 export type DiaryEntry = {
   id: string;
   user_id: string;
@@ -28,9 +26,7 @@ export type DiaryEntry = {
   updated_at: string;
 };
 
-// CRUD operations for diary entries
 export const diaryOperations = {
-  // Create a new diary entry
   createEntry: async (title: string, content: string, userId: string) => {
     const { data, error } = await supabase
       .from("diary")
@@ -41,18 +37,15 @@ export const diaryOperations = {
     return data[0];
   },
 
-  // Read all diary entries for a user
   getEntries: async (userId: string) => {
     console.log("Querying diary entries for user:", userId);
 
-    // First, let's check if we can get any data at all
-    const { data: allData, error: allError } = await supabase
+    const { data: allData } = await supabase
       .from("diary")
       .select("*");
 
     console.log("All diary entries:", allData);
 
-    // Then try our specific query
     const { data, error } = await supabase
       .from("diary")
       .select("*")
@@ -68,19 +61,6 @@ export const diaryOperations = {
     return data;
   },
 
-  // Update a diary entry
-  updateEntry: async (id: string, title: string, content: string) => {
-    const { data, error } = await supabase
-      .from("diary")
-      .update({ title, content })
-      .eq("id", id)
-      .select();
-
-    if (error) throw error;
-    return data[0];
-  },
-
-  // Delete a diary entry
   deleteEntry: async (id: string) => {
     const { error } = await supabase.from("diary").delete().eq("id", id);
 

@@ -1,3 +1,4 @@
+import "react-native-url-polyfill/auto";
 import {
   DarkTheme,
   DefaultTheme,
@@ -42,14 +43,14 @@ export default function RootLayout() {
       <StatusBar style="dark" />
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <AuthProvider>
-          <Stack.Screen
-            name="(protected)"
-            options={{
-              headerShown: false,
-              animation: "none",
-            }}
-          />
           <Stack>
+            <Stack.Screen
+              name="(protected)"
+              options={{
+                headerShown: false,
+                animation: "none",
+              }}
+            />
             <Stack.Screen
               name="login"
               options={{

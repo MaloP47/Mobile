@@ -1,8 +1,5 @@
-import { useEffect } from "react";
 import { Redirect, Stack } from "expo-router";
 import { useAuth } from "@/context/auth";
-import { LogoutButton } from "@/components/LogoutButton";
-import { View } from "react-native";
 
 export default function ProtectedLayout() {
   const { isLoggedIn, isReady } = useAuth();
@@ -23,6 +20,6 @@ export default function ProtectedLayout() {
           headerShown: false,
         }}
       />
-    </Stack>
+    </Stack> 
   );
 }

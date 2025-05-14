@@ -5,6 +5,9 @@ import {
   ImageBackground,
   ScrollView,
   FlatList,
+  Modal,
+  Alert,
+  TouchableOpacity,
 } from "react-native";
 import { LogoutButton } from "@/components/LogoutButton";
 import { useState, useEffect } from "react";
@@ -27,6 +30,8 @@ interface DiaryEntry {
 export default function ProfileScreen() {
   const { AnimatedTouchableOpacity, backgroundColor } = useButtonAnimation();
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
+  const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const userId = "eb3fe3a9-d258-48f2-ba72-764eda30d3b8";
 
   useEffect(() => {
@@ -73,8 +78,49 @@ export default function ProfileScreen() {
     getEntries();
   }, []);
 
+  const handleDeleteEntry = async (entryId: string) => {
+    try {
+      // Use a more specific delete query
+      const { error } = await supabase.from("diary").delete().eq("id", entryId);
+
+      if (error) {
+        console.error("Error deleting entry:", error.message);
+        Alert.alert("Error", "Failed to delete entry");
+        return;
+      }
+
+      // Update local state
+      setEntries(entries.filter((entry) => entry.id !== entryId));
+      setIsModalVisible(false);
+      setSelectedEntry(null);
+    } catch (error: any) {
+      console.error("Error in handleDeleteEntry:", error.message);
+      Alert.alert("Error", "An unexpected error occurred");
+    }
+  };
+
+  const showDeleteConfirmation = (entry: DiaryEntry) => {
+    Alert.alert("Delete Entry", "Are you sure you want to delete this entry?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => handleDeleteEntry(entry.id),
+      },
+    ]);
+  };
+
   const renderEntry = ({ item }: { item: DiaryEntry }) => (
-    <View style={styles.entryCard}>
+    <TouchableOpacity
+      style={styles.entryCard}
+      onPress={() => {
+        setSelectedEntry(item);
+        setIsModalVisible(true);
+      }}
+    >
       <View style={styles.entryHeader}>
         <Text style={styles.entryTitle}>{item.title}</Text>
         <FeelingEmoticon feeling={item.feeling_id} />
@@ -82,7 +128,7 @@ export default function ProfileScreen() {
       <Text style={styles.entryDate}>
         {new Date(item.date).toLocaleDateString()}
       </Text>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -104,6 +150,56 @@ export default function ProfileScreen() {
           />
         </View>
       </ScrollView>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => {
+          setIsModalVisible(false);
+          setSelectedEntry(null);
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {selectedEntry && (
+              <>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>{selectedEntry.title}</Text>
+                  <FeelingEmoticon
+                    feeling={selectedEntry.feeling_id}
+                    size={30}
+                  />
+                </View>
+                <Text style={styles.modalDate}>
+                  {new Date(selectedEntry.date).toLocaleDateString()}
+                </Text>
+                <ScrollView style={styles.modalScrollView}>
+                  <Text style={styles.modalText}>{selectedEntry.content}</Text>
+                </ScrollView>
+                <View style={styles.modalButtonsContainer}>
+                  <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={() => {
+                      setIsModalVisible(false);
+                      setSelectedEntry(null);
+                    }}
+                  >
+                    <Text style={styles.closeButtonText}>Close</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => showDeleteConfirmation(selectedEntry)}
+                  >
+                    <Text style={styles.deleteButtonText}>Delete Entry</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.footer}>
         <AnimatedTouchableOpacity
           style={[styles.button, { backgroundColor }]}
@@ -184,6 +280,80 @@ const styles = StyleSheet.create({
   },
   buttonTxt: {
     fontSize: 24,
+    fontFamily: "Pacifico",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 20,
+    width: "90%",
+    maxHeight: "80%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontFamily: "Pacifico",
+    flex: 1,
+  },
+  modalDate: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 15,
+  },
+  modalScrollView: {
+    maxHeight: "60%",
+  },
+  modalText: {
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  modalButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 35,
+    gap: 10,
+  },
+  deleteButton: {
+    backgroundColor: "#FF4444",
+    borderRadius: 25,
+    padding: 10,
+    flex: 1,
+    alignItems: "center",
+  },
+  closeButton: {
+    backgroundColor: "#666",
+    borderRadius: 25,
+    padding: 10,
+    flex: 1,
+    alignItems: "center",
+  },
+  deleteButtonText: {
+    color: "white",
+    fontSize: 18,
+    fontFamily: "Pacifico",
+  },
+  closeButtonText: {
+    color: "white",
+    fontSize: 18,
     fontFamily: "Pacifico",
   },
 });

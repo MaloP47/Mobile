@@ -1,13 +1,13 @@
 import { TouchableOpacity, StyleSheet } from "react-native";
-import { SimpleLineIcons } from "@expo/vector-icons";
 import { useAuth } from "@/context/auth";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 export function LogoutButton() {
   const { logOut } = useAuth();
 
   return (
     <TouchableOpacity style={styles.container} onPress={logOut}>
-      <SimpleLineIcons name="logout" size={24} color="black" />
+      <MaterialCommunityIcons name="logout" size={30} color="black" />
     </TouchableOpacity>
   );
 }

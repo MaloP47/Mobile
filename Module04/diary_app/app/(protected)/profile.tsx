@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,9 +9,9 @@ import {
   Modal,
   Alert,
   TouchableOpacity,
+  TextInput,
 } from "react-native";
 import { LogoutButton } from "@/components/LogoutButton";
-import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { FeelingEmoticon } from "@/components/FeelingEmoticon";
 import { useButtonAnimation } from "../../components/useButtonAnimation";
@@ -32,6 +33,13 @@ export default function ProfileScreen() {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isNewEntryModalVisible, setIsNewEntryModalVisible] = useState(false);
+  const [newEntry, setNewEntry] = useState({
+    title: "",
+    content: "",
+    feeling_id: "neutral" as FeelingType,
+    date: new Date().toISOString().split("T")[0],
+  });
   const userId = "eb3fe3a9-d258-48f2-ba72-764eda30d3b8";
 
   useEffect(() => {
@@ -113,6 +121,43 @@ export default function ProfileScreen() {
     ]);
   };
 
+  const handleCreateEntry = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("diary")
+        .insert([
+          {
+            title: newEntry.title,
+            content: newEntry.content,
+            feeling_id: newEntry.feeling_id,
+            date: newEntry.date,
+            user_id: userId,
+          },
+        ])
+        .select();
+
+      if (error) {
+        console.error("Error creating entry:", error.message);
+        Alert.alert("Error", "Failed to create entry");
+        return;
+      }
+
+      if (data) {
+        setEntries([...entries, data[0]]);
+        setIsNewEntryModalVisible(false);
+        setNewEntry({
+          title: "",
+          content: "",
+          feeling_id: "neutral",
+          date: new Date().toISOString().split("T")[0],
+        });
+      }
+    } catch (error: any) {
+      console.error("Error in handleCreateEntry:", error.message);
+      Alert.alert("Error", "An unexpected error occurred");
+    }
+  };
+
   const renderEntry = ({ item }: { item: DiaryEntry }) => (
     <TouchableOpacity
       style={styles.entryCard}
@@ -131,6 +176,91 @@ export default function ProfileScreen() {
     </TouchableOpacity>
   );
 
+  const renderNewEntryModal = () => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isNewEntryModalVisible}
+      onRequestClose={() => {
+        setIsNewEntryModalVisible(false);
+        setNewEntry({
+          title: "",
+          content: "",
+          feeling_id: "neutral",
+          date: new Date().toISOString().split("T")[0],
+        });
+      }}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>New Entry</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Title"
+            value={newEntry.title}
+            onChangeText={(text) => setNewEntry({ ...newEntry, title: text })}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Date (YYYY-MM-DD)"
+            value={newEntry.date}
+            onChangeText={(text) => setNewEntry({ ...newEntry, date: text })}
+          />
+          <TextInput
+            style={[styles.input, styles.contentInput]}
+            placeholder="Write your thoughts..."
+            value={newEntry.content}
+            onChangeText={(text) => setNewEntry({ ...newEntry, content: text })}
+            multiline
+          />
+          <View style={styles.feelingSelector}>
+            {["very sad", "sad", "neutral", "happy", "very happy"].map(
+              (feeling) => (
+                <TouchableOpacity
+                  key={feeling}
+                  onPress={() =>
+                    setNewEntry({
+                      ...newEntry,
+                      feeling_id: feeling as FeelingType,
+                    })
+                  }
+                  style={[
+                    styles.feelingButton,
+                    newEntry.feeling_id === feeling && styles.selectedFeeling,
+                  ]}
+                >
+                  <FeelingEmoticon feeling={feeling as FeelingType} size={24} />
+                </TouchableOpacity>
+              )
+            )}
+          </View>
+          <View style={styles.modalButtonsContainer}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => {
+                setIsNewEntryModalVisible(false);
+                setNewEntry({
+                  title: "",
+                  content: "",
+                  feeling_id: "neutral",
+                  date: new Date().toISOString().split("T")[0],
+                });
+              }}
+            >
+              <Text style={styles.closeButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={handleCreateEntry}
+            >
+              <Text style={styles.saveButtonText}>Save Entry</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <ImageBackground
       source={require("@/assets/images/golden.png")}
@@ -144,7 +274,7 @@ export default function ProfileScreen() {
         <View style={styles.entriesContainer}>
           <FlatList
             data={entries}
-            keyExtractor={(item) => item.date.toString()}
+            keyExtractor={(item) => item.id}
             renderItem={renderEntry}
             scrollEnabled={false}
           />
@@ -203,13 +333,12 @@ export default function ProfileScreen() {
       <View style={styles.footer}>
         <AnimatedTouchableOpacity
           style={[styles.button, { backgroundColor }]}
-          onPress={() => {
-            console.log("New entry");
-          }}
+          onPress={() => setIsNewEntryModalVisible(true)}
         >
           <Text style={styles.buttonTxt}>New entry</Text>
         </AnimatedTouchableOpacity>
       </View>
+      {renderNewEntryModal()}
     </ImageBackground>
   );
 }
@@ -352,6 +481,41 @@ const styles = StyleSheet.create({
     fontFamily: "Pacifico",
   },
   closeButtonText: {
+    color: "white",
+    fontSize: 18,
+    fontFamily: "Pacifico",
+  },
+  input: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    fontSize: 16,
+  },
+  contentInput: {
+    height: 150,
+    textAlignVertical: "top",
+  },
+  feelingSelector: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 20,
+  },
+  feelingButton: {
+    padding: 10,
+    borderRadius: 20,
+  },
+  selectedFeeling: {
+    backgroundColor: "#f0f0f0",
+  },
+  saveButton: {
+    backgroundColor: "#4CAF50",
+    borderRadius: 25,
+    padding: 10,
+    flex: 1,
+    alignItems: "center",
+  },
+  saveButtonText: {
     color: "white",
     fontSize: 18,
     fontFamily: "Pacifico",

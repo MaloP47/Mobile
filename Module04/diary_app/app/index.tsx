@@ -3,9 +3,10 @@ import { View, Text, StyleSheet, ImageBackground} from "react-native";
 import { useButtonAnimation } from "../components/useButtonAnimation";
 import { AuthContext } from "@/context/auth";
 import { router } from "expo-router";
+
+
 export default function LoginScreen() {
   const { AnimatedTouchableOpacity, backgroundColor } = useButtonAnimation();
-
 
   return (
     <ImageBackground

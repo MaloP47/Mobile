@@ -10,6 +10,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { FeelingEmoticon } from "@/components/FeelingEmoticon";
+import { useButtonAnimation } from "../../components/useButtonAnimation";
 
 type FeelingType = "very sad" | "sad" | "neutral" | "happy" | "very happy";
 
@@ -24,6 +25,7 @@ interface DiaryEntry {
 }
 
 export default function ProfileScreen() {
+  const { AnimatedTouchableOpacity, backgroundColor } = useButtonAnimation();
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const userId = "eb3fe3a9-d258-48f2-ba72-764eda30d3b8";
 
@@ -88,7 +90,10 @@ export default function ProfileScreen() {
       source={require("@/assets/images/golden.png")}
       style={styles.container}
     >
-      <LogoutButton />
+      <View style={styles.header}>
+        <LogoutButton />
+      </View>
+
       <ScrollView style={styles.scrollView}>
         <View style={styles.entriesContainer}>
           <FlatList
@@ -99,6 +104,16 @@ export default function ProfileScreen() {
           />
         </View>
       </ScrollView>
+      <View style={styles.footer}>
+        <AnimatedTouchableOpacity
+          style={[styles.button, { backgroundColor }]}
+          onPress={() => {
+            console.log("New entry");
+          }}
+        >
+          <Text style={styles.buttonTxt}>New entry</Text>
+        </AnimatedTouchableOpacity>
+      </View>
     </ImageBackground>
   );
 }
@@ -110,9 +125,16 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     padding: 20,
+    // backgroundColor: "red",
+  },
+  header: {
+    // backgroundColor: "red",
+    height: 65,
+  },
+  headerText: {
+    fontSize: 24,
   },
   entriesContainer: {
-    marginTop: 80,
     gap: 15,
   },
   entryCard: {
@@ -140,5 +162,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#666",
     marginBottom: 10,
+  },
+  footer: {
+    // backgroundColor: "red",
+    height: 100,
+    marginBottom: 30,
+  },
+  button: {
+    backgroundColor: "#FFD700",
+    borderRadius: 25,
+    paddingVertical: 5,
+    paddingHorizontal: 30,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 25,
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 15,
+  },
+  buttonTxt: {
+    fontSize: 24,
+    fontFamily: "Pacifico",
   },
 });

@@ -15,7 +15,7 @@ export function LogoutButton() {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    top: 50,
+    top: 20,
     right: 20,
     zIndex: 1000,
     padding: 10,

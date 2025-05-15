@@ -315,12 +315,16 @@ export default function ProfileScreen() {
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.entriesContainer}>
-          <FlatList
-            data={entries}
-            keyExtractor={(item) => item.id}
-            renderItem={renderEntry}
-            scrollEnabled={false}
-          />
+          {entries.length === 0 ? (
+            <Text style={styles.noEntriesText}>Add your first entry</Text>
+          ) : (
+            <FlatList
+              data={entries}
+              keyExtractor={(item) => item.id}
+              renderItem={renderEntry}
+              scrollEnabled={false}
+            />
+          )}
         </View>
       </ScrollView>
 
@@ -562,5 +566,12 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontFamily: "Pacifico",
+  },
+  noEntriesText: {
+    fontSize: 36,
+    fontFamily: "Pacifico",
+    textAlign: "center",
+    color: "black",
+    marginTop: 50,
   },
 });

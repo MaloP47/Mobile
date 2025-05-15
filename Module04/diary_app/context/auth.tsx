@@ -7,6 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { supabase } from "@/lib/supabase";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -46,7 +47,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
     router.replace("/(protected)/profile");
   };
 
-  const logOut = () => {
+  const logOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error signing out:", error);
+      return;
+    }
     setIsLoggedIn(false);
     storeAuthState({ isLoggedIn: false });
     router.replace("/");

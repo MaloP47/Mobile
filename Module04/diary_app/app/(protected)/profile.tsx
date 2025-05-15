@@ -49,7 +49,7 @@ export default function ProfileScreen() {
       try {
         const { data, error } = await supabase.from("diary").select("*");
 
-        console.log("Raw query result:", { data, error });
+        // console.log("Raw query result:", { data, error });
 
         if (error) {
           console.error("Error fetching entries:", error.message);
@@ -57,19 +57,19 @@ export default function ProfileScreen() {
         }
 
         if (data) {
-          console.log("All entries in table:", data);
+          //   console.log("All entries in table:", data);
           console.log("Number of entries found:", data.length);
 
-          if (data.length > 0) {
-            console.log("First entry structure:", {
-              id: data[0].id,
-              user_id: data[0].user_id,
-              title: data[0].title,
-              content: data[0].content,
-              created_at: data[0].created_at,
-              feeling: data[0].feeling_id,
-            });
-          }
+          //   if (data.length > 0) {
+          //     console.log("First entry structure:", {
+          //       id: data[0].id,
+          //       user_id: data[0].user_id,
+          //       title: data[0].title,
+          //       content: data[0].content,
+          //       created_at: data[0].created_at,
+          //       feeling: data[0].feeling_id,
+          //     });
+          //   }
 
           // Sort entries by date in descending order
           const sortedEntries = [...data].sort((a, b) => {

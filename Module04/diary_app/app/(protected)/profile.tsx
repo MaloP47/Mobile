@@ -10,6 +10,8 @@ import {
   Alert,
   TouchableOpacity,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { LogoutButton } from "@/components/LogoutButton";
 import { supabase } from "@/lib/supabase";
@@ -88,7 +90,6 @@ export default function ProfileScreen() {
 
   const handleDeleteEntry = async (entryId: string) => {
     try {
-      // Use a more specific delete query
       const { error } = await supabase.from("diary").delete().eq("id", entryId);
 
       if (error) {
@@ -97,7 +98,6 @@ export default function ProfileScreen() {
         return;
       }
 
-      // Update local state
       setEntries(entries.filter((entry) => entry.id !== entryId));
       setIsModalVisible(false);
       setSelectedEntry(null);
@@ -123,6 +123,26 @@ export default function ProfileScreen() {
 
   const handleCreateEntry = async () => {
     try {
+      // Validate empty fields
+      if (!newEntry.title.trim()) {
+        Alert.alert("Error", "Title cannot be empty");
+        return;
+      }
+      if (!newEntry.content.trim()) {
+        Alert.alert("Error", "Content cannot be empty");
+        return;
+      }
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(newEntry.date)) {
+        Alert.alert("Error", "Please enter a valid date in YYYY-MM-DD format");
+        return;
+      }
+      const date = new Date(newEntry.date);
+      if (isNaN(date.getTime())) {
+        Alert.alert("Error", "Please enter a valid date");
+        return;
+      }
+
       const { data, error } = await supabase
         .from("diary")
         .insert([
@@ -143,7 +163,10 @@ export default function ProfileScreen() {
       }
 
       if (data) {
-        setEntries([...entries, data[0]]);
+        const updatedEntries = [...entries, data[0]].sort((a, b) => {
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
+        setEntries(updatedEntries);
         setIsNewEntryModalVisible(false);
         setNewEntry({
           title: "",
@@ -191,73 +214,93 @@ export default function ProfileScreen() {
         });
       }}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>New Entry</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Title"
-            value={newEntry.title}
-            onChangeText={(text) => setNewEntry({ ...newEntry, title: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Date (YYYY-MM-DD)"
-            value={newEntry.date}
-            onChangeText={(text) => setNewEntry({ ...newEntry, date: text })}
-          />
-          <TextInput
-            style={[styles.input, styles.contentInput]}
-            placeholder="Write your thoughts..."
-            value={newEntry.content}
-            onChangeText={(text) => setNewEntry({ ...newEntry, content: text })}
-            multiline
-          />
-          <View style={styles.feelingSelector}>
-            {["very sad", "sad", "neutral", "happy", "very happy"].map(
-              (feeling) => (
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ScrollView>
+              <Text style={styles.modalTitle}>New Entry</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Title"
+                placeholderTextColor={"orange"}
+                value={newEntry.title}
+                onChangeText={(text) =>
+                  setNewEntry({ ...newEntry, title: text })
+                }
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={"orange"}
+                value={newEntry.date}
+                onChangeText={(text) =>
+                  setNewEntry({ ...newEntry, date: text })
+                }
+              />
+              <TextInput
+                style={[styles.input, styles.contentInput]}
+                placeholder="Write your thoughts..."
+                placeholderTextColor={"orange"}
+                value={newEntry.content}
+                onChangeText={(text) =>
+                  setNewEntry({ ...newEntry, content: text })
+                }
+                multiline
+              />
+              <View style={styles.feelingSelector}>
+                {["very sad", "sad", "neutral", "happy", "very happy"].map(
+                  (feeling) => (
+                    <TouchableOpacity
+                      key={feeling}
+                      onPress={() =>
+                        setNewEntry({
+                          ...newEntry,
+                          feeling_id: feeling as FeelingType,
+                        })
+                      }
+                      style={[
+                        styles.feelingButton,
+                        newEntry.feeling_id === feeling &&
+                          styles.selectedFeeling,
+                      ]}
+                    >
+                      <FeelingEmoticon
+                        feeling={feeling as FeelingType}
+                        size={24}
+                      />
+                    </TouchableOpacity>
+                  )
+                )}
+              </View>
+              <View style={styles.modalButtonsContainer}>
                 <TouchableOpacity
-                  key={feeling}
-                  onPress={() =>
+                  style={styles.closeButton}
+                  onPress={() => {
+                    setIsNewEntryModalVisible(false);
                     setNewEntry({
-                      ...newEntry,
-                      feeling_id: feeling as FeelingType,
-                    })
-                  }
-                  style={[
-                    styles.feelingButton,
-                    newEntry.feeling_id === feeling && styles.selectedFeeling,
-                  ]}
+                      title: "",
+                      content: "",
+                      feeling_id: "neutral",
+                      date: new Date().toISOString().split("T")[0],
+                    });
+                  }}
                 >
-                  <FeelingEmoticon feeling={feeling as FeelingType} size={24} />
+                  <Text style={styles.closeButtonText}>Cancel</Text>
                 </TouchableOpacity>
-              )
-            )}
-          </View>
-          <View style={styles.modalButtonsContainer}>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => {
-                setIsNewEntryModalVisible(false);
-                setNewEntry({
-                  title: "",
-                  content: "",
-                  feeling_id: "neutral",
-                  date: new Date().toISOString().split("T")[0],
-                });
-              }}
-            >
-              <Text style={styles.closeButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={handleCreateEntry}
-            >
-              <Text style={styles.saveButtonText}>Save Entry</Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={handleCreateEntry}
+                >
+                  <Text style={styles.saveButtonText}>Save Entry</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 

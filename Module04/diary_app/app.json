@@ -17,7 +17,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.diary_app"
+      "package": "com.ft.diary_app"
     },
     "web": {
       "bundler": "metro",

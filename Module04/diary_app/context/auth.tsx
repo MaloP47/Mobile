@@ -75,6 +75,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           const auth = JSON.parse(value);
           setIsLoggedIn(auth.isLoggedIn);
           setUserID(auth.userID || "");
+
           console.log("Retrieved userID from storage:", auth.userID); // Debug log
         }
       } catch (error) {

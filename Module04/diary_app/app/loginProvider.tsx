@@ -17,7 +17,7 @@ export default function LoginProvider(): JSX.Element {
   useEffect(() => {
     GoogleSignin.configure({
       scopes: ["https://www.googleapis.com/auth/drive.readonly"],
-      webClientId: googleClientID
+      webClientId: googleClientID,
     });
   }, []);
 
@@ -29,19 +29,37 @@ export default function LoginProvider(): JSX.Element {
 
         console.log(JSON.stringify(userInfo, null, 2));
 
-        if (userInfo.data.idToken) {
-          const { data, error } = await supabase.auth.signInWithIdToken({
-            provider: "google",
-            token: userInfo.data.idToken,
-          });
+        if (userInfo.data?.idToken) {
+          const { data: authData, error } =
+            await supabase.auth.signInWithIdToken({
+              provider: "google",
+              token: userInfo.data?.idToken,
+            });
 
           if (error) {
             console.error("Supabase auth error:", error);
             return;
           }
 
-          // If successful, log in and navigate
-          authContext.logIn();
+          // Get the current user data
+          const {
+            data: { user },
+            error: userError,
+          } = await supabase.auth.getUser();
+
+          if (userError || !user?.id) {
+            console.error("Error getting user:", userError);
+            return;
+          }
+
+          // Log the user data for debugging
+          console.log("User authenticated:", {
+            id: user.id,
+            email: user.email,
+          });
+
+          // Pass the user ID to logIn
+          authContext.logIn(user.id);
           router.replace("/(protected)/profile");
         } else {
           throw new Error("No ID token present!");
@@ -60,7 +78,7 @@ export default function LoginProvider(): JSX.Element {
     } else {
       // Existing GitHub login logic
       console.log(`${provider} sign in pressed`);
-      authContext.logIn();
+      authContext.logIn("744a65cf-b7a4-4e55-ad75-699f20bc249e");
       router.replace("/(protected)/profile");
     }
   };

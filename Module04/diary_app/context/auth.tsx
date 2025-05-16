@@ -14,7 +14,8 @@ SplashScreen.preventAutoHideAsync();
 type AuthState = {
   isLoggedIn: boolean;
   isReady: boolean;
-  logIn: () => void;
+  userID: string;
+  logIn: (userID: string) => void;
   logOut: () => void;
 };
 
@@ -23,16 +24,21 @@ const authStorageKey = "auth-key";
 export const AuthContext = createContext<AuthState>({
   isLoggedIn: false,
   isReady: false,
-  logIn: () => {},
+  userID: "",
+  logIn: (userID: string) => {},
   logOut: () => {},
 });
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [isReady, setIsReady] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userID, setUserID] = useState<string>("");
   const router = useRouter();
 
-  const storeAuthState = async (newState: { isLoggedIn: boolean }) => {
+  const storeAuthState = async (newState: {
+    isLoggedIn: boolean;
+    userID: string;
+  }) => {
     try {
       const jsonValue = JSON.stringify(newState);
       await AsyncStorage.setItem(authStorageKey, jsonValue);
@@ -41,9 +47,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   };
 
-  const logIn = () => {
+  const logIn = (userID: string) => {
+    console.log("Logging in with userID:", userID); // Debug log
     setIsLoggedIn(true);
-    storeAuthState({ isLoggedIn: true });
+    setUserID(userID);
+    storeAuthState({ isLoggedIn: true, userID });
     router.replace("/(protected)/profile");
   };
 
@@ -54,19 +62,20 @@ export function AuthProvider({ children }: PropsWithChildren) {
       return;
     }
     setIsLoggedIn(false);
-    storeAuthState({ isLoggedIn: false });
+    setUserID("");
+    storeAuthState({ isLoggedIn: false, userID: "" });
     router.replace("/");
   };
 
   useEffect(() => {
     const getAuthFromStorage = async () => {
-      // simulate a delay, e.g. for an API request
-      await new Promise((res) => setTimeout(() => res(null), 1000));
       try {
         const value = await AsyncStorage.getItem(authStorageKey);
         if (value !== null) {
           const auth = JSON.parse(value);
           setIsLoggedIn(auth.isLoggedIn);
+          setUserID(auth.userID || "");
+          console.log("Retrieved userID from storage:", auth.userID); // Debug log
         }
       } catch (error) {
         console.log("Error fetching from storage", error);
@@ -82,11 +91,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   }, [isReady]);
 
+  // Debug log for userID changes
+  useEffect(() => {
+    console.log("Current userID:", userID);
+  }, [userID]);
+
   return (
     <AuthContext.Provider
       value={{
         isReady,
         isLoggedIn,
+        userID,
         logIn,
         logOut,
       }}

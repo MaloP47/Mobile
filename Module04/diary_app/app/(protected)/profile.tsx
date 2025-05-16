@@ -17,6 +17,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { supabase } from "@/lib/supabase";
 import { FeelingEmoticon } from "@/components/FeelingEmoticon";
 import { useButtonAnimation } from "../../components/useButtonAnimation";
+import { useAuth } from "@/context/auth";
 
 type FeelingType = "very sad" | "sad" | "neutral" | "happy" | "very happy";
 
@@ -42,14 +43,21 @@ export default function ProfileScreen() {
     feeling_id: "neutral" as FeelingType,
     date: new Date().toISOString().split("T")[0],
   });
-  const userId = "eb3fe3a9-d258-48f2-ba72-764eda30d3b8";
+  const { userID } = useAuth();
 
   useEffect(() => {
     const getEntries = async () => {
       try {
-        const { data, error } = await supabase.from("diary").select("*");
+        if (!userID) {
+          console.error("No user ID available");
+          return;
+        }
 
-        // console.log("Raw query result:", { data, error });
+        const { data, error } = await supabase
+          .from("diary")
+          .select("*")
+          .eq("user_id", userID)
+          .order("created_at", { ascending: false });
 
         if (error) {
           console.error("Error fetching entries:", error.message);
@@ -57,28 +65,8 @@ export default function ProfileScreen() {
         }
 
         if (data) {
-          //   console.log("All entries in table:", data);
           console.log("Number of entries found:", data.length);
-
-          //   if (data.length > 0) {
-          //     console.log("First entry structure:", {
-          //       id: data[0].id,
-          //       user_id: data[0].user_id,
-          //       title: data[0].title,
-          //       content: data[0].content,
-          //       created_at: data[0].created_at,
-          //       feeling: data[0].feeling_id,
-          //     });
-          //   }
-
-          // Sort entries by date in descending order
-          const sortedEntries = [...data].sort((a, b) => {
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
-          });
-
-          setEntries(sortedEntries as DiaryEntry[]);
-        } else {
-          console.log("No data returned from query");
+          setEntries(data as DiaryEntry[]);
         }
       } catch (error: any) {
         console.error("Error in getEntries:", error.message);
@@ -86,7 +74,7 @@ export default function ProfileScreen() {
     };
 
     getEntries();
-  }, []);
+  }, [userID]);
 
   const handleDeleteEntry = async (entryId: string) => {
     try {
@@ -151,7 +139,7 @@ export default function ProfileScreen() {
             content: newEntry.content,
             feeling_id: newEntry.feeling_id,
             date: newEntry.date,
-            user_id: userId,
+            user_id: userID,
           },
         ])
         .select();

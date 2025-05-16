@@ -76,10 +76,42 @@ export default function LoginProvider(): JSX.Element {
         }
       }
     } else {
-      // Existing GitHub login logic
-      console.log(`${provider} sign in pressed`);
-      authContext.logIn("744a65cf-b7a4-4e55-ad75-699f20bc249e");
-      router.replace("/(protected)/profile");
+      // GitHub login logic
+      try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: "github",
+        });
+        console.log("data", data);
+        console.log("erreur", error);
+
+        if (error) {
+          console.error("GitHub auth error:", error);
+          return;
+        }
+
+        // Get the current user data
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user?.id) {
+          console.error("Error getting user:", userError);
+          return;
+        }
+
+        // Log the user data for debugging
+        console.log("User authenticated:", {
+          id: user.id,
+          email: user.email,
+        });
+
+        // Pass the user ID to logIn
+        authContext.logIn(user.id);
+        router.replace("/(protected)/profile");
+      } catch (error) {
+        console.error("GitHub Sign-In error:", error);
+      }
     }
   };
 

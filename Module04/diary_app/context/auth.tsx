@@ -8,6 +8,11 @@ import {
   useState,
 } from "react";
 import { supabase } from "@/lib/supabase";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
+import CookieManager from "@react-native-cookies/cookies";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -56,10 +61,26 @@ export function AuthProvider({ children }: PropsWithChildren) {
   };
 
   const logOut = async () => {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({ scope: "global" });
     if (error) {
       console.error("Error signing out:", error);
       return;
+    }
+    try {
+      await AsyncStorage.clear();
+      console.log("✅ AsyncStorage vidé complètement");
+    } catch (e) {
+      console.error("❌ Échec de la purge d'AsyncStorage", e);
+    }
+    await CookieManager.clearAll(true);
+    await CookieManager.removeSessionCookies();
+    await CookieManager.flush();
+    try {
+      await GoogleSignin.revokeAccess();
+      await GoogleSignin.signOut();
+      console.log("Google session terminée.");
+    } catch (error) {
+      console.log("Erreur lors du logout Google :", error);
     }
     setIsLoggedIn(false);
     setUserID("");
@@ -70,13 +91,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     const getAuthFromStorage = async () => {
       try {
+        // Skip Supabase session check entirely
         const value = await AsyncStorage.getItem(authStorageKey);
         if (value !== null) {
           const auth = JSON.parse(value);
           setIsLoggedIn(auth.isLoggedIn);
           setUserID(auth.userID || "");
-
-          console.log("Retrieved userID from storage:", auth.userID); // Debug log
+          console.log("Using local auth state:", auth.userID);
         }
       } catch (error) {
         console.log("Error fetching from storage", error);

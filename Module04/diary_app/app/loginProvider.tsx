@@ -1,10 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  ImageBackground,
-  Modal,
-} from "react-native";
+import { View, Text, StyleSheet, ImageBackground, Modal } from "react-native";
 import { SimpleLineIcons as Icon } from "@expo/vector-icons";
 import { JSX, useState, useContext, useEffect } from "react";
 import { AuthContext } from "@/context/auth";
@@ -81,7 +75,7 @@ export default function LoginProvider(): JSX.Element {
         } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
           console.log("Play services not available or outdated");
         } else {
-          console.error("Google Sign-In error:", error);
+          console.log("Google Sign-In error:", error);
         }
       }
     } else {
@@ -91,7 +85,7 @@ export default function LoginProvider(): JSX.Element {
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: "github",
           options: {
-            redirectTo: "diaryapp://auth/callback",
+            redirectTo: "diaryapp://",
             skipBrowserRedirect: true,
           },
         });
@@ -116,31 +110,58 @@ export default function LoginProvider(): JSX.Element {
 
   const handleNavigationStateChange = async (navState: any) => {
     const url = navState.url;
-    if (url.includes("access_token=")) {
+    // Check for both access_token and error in the URL
+    if (url.includes("access_token=") || url.includes("error=")) {
       setShowWebView(false);
 
-      // Extract the access token from the URL
-      const accessToken = url.split("access_token=")[1].split("&")[0];
-
       try {
-        // Set the session with the access token
+        if (url.includes("error=")) {
+          const error = url.split("error=")[1]?.split("&")[0];
+          console.error("OAuth error:", error);
+          return;
+        }
+
+        // Extract tokens from URL
+        const accessToken = url.split("access_token=")[1]?.split("&")[0];
+        const refreshToken = url.split("refresh_token=")[1]?.split("&")[0];
+
+        if (!accessToken) {
+          console.error("Missing access token");
+          return;
+        }
+
+        // Try to set session but don't fail if refresh token is missing
         const {
           data: { session },
           error,
         } = await supabase.auth.setSession({
           access_token: accessToken,
-          refresh_token: url.split("refresh_token=")[1].split("&")[0],
+          refresh_token: refreshToken || "",
         });
 
-        if (error) {
-          console.error("Error setting session:", error);
-          return;
-        }
-
+        // Even if there's an error, proceed with login if we have a user
         if (session?.user) {
           console.log("User authenticated:", session.user);
           authContext.logIn(session.user.id);
           router.replace("/(protected)/profile");
+        } else if (
+          !error ||
+          error.message?.includes("Refresh Token Not Found")
+        ) {
+          // If we have an access token but no session, try to get user info directly
+          const {
+            data: { user },
+            error: userError,
+          } = await supabase.auth.getUser();
+          if (user?.id) {
+            console.log("User authenticated via access token:", user);
+            authContext.logIn(user.id);
+            router.replace("/(protected)/profile");
+          } else {
+            console.error("No user found after authentication");
+          }
+        } else {
+          console.error("Error setting session:", error);
         }
       } catch (error) {
         console.error("Error processing authentication:", error);
@@ -189,7 +210,6 @@ export default function LoginProvider(): JSX.Element {
           </Icon.Button>
         </View>
       </View>
-
       <Modal
         visible={showWebView}
         animationType="slide"
@@ -199,6 +219,8 @@ export default function LoginProvider(): JSX.Element {
           source={{ uri: authUrl }}
           onNavigationStateChange={handleNavigationStateChange}
           style={{ flex: 1 }}
+          cacheEnabled={false}
+          sharedCookiesEnabled={false}
           javaScriptEnabled={true}
           domStorageEnabled={true}
         />

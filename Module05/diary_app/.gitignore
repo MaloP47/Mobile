@@ -42,3 +42,5 @@ app-example
 .vscode
 
 android
+
+package-lock.json

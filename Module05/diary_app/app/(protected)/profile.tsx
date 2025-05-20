@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -62,7 +62,7 @@ export default function ProfileScreen() {
   });
   const { userID } = useAuth();
 
-  const calculateFeelingPercentages = async () => {
+  const calculateFeelingPercentages = useCallback(async () => {
     try {
       const { data: allEntries, error: allEntriesError } = await supabase
         .from("diary")
@@ -115,7 +115,7 @@ export default function ProfileScreen() {
     } catch (error: any) {
       console.error("Error calculating feeling percentages:", error.message);
     }
-  };
+  }, [userID]);
 
   useEffect(() => {
     const getEntries = async () => {
@@ -151,7 +151,7 @@ export default function ProfileScreen() {
         }
 
         if (data) {
-          console.log("Number of entries found:", data.length);
+          console.log("Number of entries found:", count);
           setEntries(data as DiaryEntry[]);
         }
 
@@ -183,7 +183,7 @@ export default function ProfileScreen() {
 
     getEntries();
     fetchUserProfile();
-  }, [userID]);
+  }, [userID, calculateFeelingPercentages]);
 
   const handleDeleteEntry = async (entryId: string) => {
     try {
@@ -395,7 +395,7 @@ export default function ProfileScreen() {
                 multiline
               />
               <View style={styles.feelingSelector}>
-                {["sad", "very sad", "neutral", "happy", "very happy"].map(
+                {["very sad", "sad", "neutral", "happy", "very happy"].map(
                   (feeling) => (
                     <TouchableOpacity
                       key={feeling}

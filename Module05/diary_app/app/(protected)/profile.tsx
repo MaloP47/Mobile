@@ -74,34 +74,44 @@ export default function ProfileScreen() {
         return;
       }
 
-      if (allEntries) {
-        const feelingCounts: Record<FeelingType, number> = {
+      if (!allEntries || allEntries.length === 0) {
+        // If there are no entries, set all percentages to 0
+        setFeelingPercentages({
           "very sad": 0,
           sad: 0,
           neutral: 0,
           happy: 0,
           "very happy": 0,
-        };
-
-        allEntries.forEach((entry) => {
-          feelingCounts[entry.feeling_id as FeelingType]++;
         });
-
-        const percentages: Record<FeelingType, number> = {
-          "very sad": 0,
-          sad: 0,
-          neutral: 0,
-          happy: 0,
-          "very happy": 0,
-        };
-
-        Object.keys(feelingCounts).forEach((feeling) => {
-          percentages[feeling as FeelingType] =
-            (feelingCounts[feeling as FeelingType] / allEntries.length) * 100;
-        });
-
-        setFeelingPercentages(percentages);
+        return;
       }
+
+      const feelingCounts: Record<FeelingType, number> = {
+        "very sad": 0,
+        sad: 0,
+        neutral: 0,
+        happy: 0,
+        "very happy": 0,
+      };
+
+      allEntries.forEach((entry) => {
+        feelingCounts[entry.feeling_id as FeelingType]++;
+      });
+
+      const percentages: Record<FeelingType, number> = {
+        "very sad": 0,
+        sad: 0,
+        neutral: 0,
+        happy: 0,
+        "very happy": 0,
+      };
+
+      Object.keys(feelingCounts).forEach((feeling) => {
+        percentages[feeling as FeelingType] =
+          (feelingCounts[feeling as FeelingType] / allEntries.length) * 100;
+      });
+
+      setFeelingPercentages(percentages);
     } catch (error: any) {
       console.error("Error calculating feeling percentages:", error.message);
     }

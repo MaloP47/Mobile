@@ -10,17 +10,17 @@ interface FeelingEmoticonProps {
 }
 
 const feelingToEmoticon: Record<FeelingType, string> = {
-  "very sad": "face-sad-tear",
-  "sad": "face-sad-cry",
-  "neutral": "face-meh",
-  "happy": "face-smile",
+  "very sad": "face-sad-cry",
+  sad: "face-sad-tear",
+  neutral: "face-meh",
+  happy: "face-smile",
   "very happy": "grin-stars",
 };
 
 const feelingToColor: Record<FeelingType, string> = {
-  "very sad": "#FF0000", // Red
-  sad: "#FF6B6B", // Light Red
-  neutral: "#FFD700", // Yellow
+  "very sad": "red", // Red
+  sad: "orange", // Light Red
+  neutral: "yellow", // Yellow
   happy: "#90EE90", // Light Green
   "very happy": "#008000", // Green
 };

@@ -5,13 +5,13 @@ import {
   StyleSheet,
   ImageBackground,
   ScrollView,
-  FlatList,
   Modal,
   Alert,
   TouchableOpacity,
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from "react-native";
 import { LogoutButton } from "@/components/LogoutButton";
 import { supabase } from "@/lib/supabase";
@@ -37,6 +37,23 @@ export default function ProfileScreen() {
   const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isNewEntryModalVisible, setIsNewEntryModalVisible] = useState(false);
+  const [entryCount, setEntryCount] = useState<number>(0);
+  const [feelingPercentages, setFeelingPercentages] = useState<
+    Record<FeelingType, number>
+  >({
+    "very sad": 0,
+    sad: 0,
+    neutral: 0,
+    happy: 0,
+    "very happy": 0,
+  });
+  const [userProfile, setUserProfile] = useState<{
+    avatar_url: string | null;
+    full_name: string | null;
+  }>({
+    avatar_url: null,
+    full_name: null,
+  });
   const [newEntry, setNewEntry] = useState({
     title: "",
     content: "",
@@ -44,6 +61,51 @@ export default function ProfileScreen() {
     date: new Date().toISOString().split("T")[0],
   });
   const { userID } = useAuth();
+
+  const calculateFeelingPercentages = async () => {
+    try {
+      const { data: allEntries, error: allEntriesError } = await supabase
+        .from("diary")
+        .select("feeling_id")
+        .eq("user_id", userID);
+
+      if (allEntriesError) {
+        console.error("Error fetching all entries:", allEntriesError.message);
+        return;
+      }
+
+      if (allEntries) {
+        const feelingCounts: Record<FeelingType, number> = {
+          "very sad": 0,
+          sad: 0,
+          neutral: 0,
+          happy: 0,
+          "very happy": 0,
+        };
+
+        allEntries.forEach((entry) => {
+          feelingCounts[entry.feeling_id as FeelingType]++;
+        });
+
+        const percentages: Record<FeelingType, number> = {
+          "very sad": 0,
+          sad: 0,
+          neutral: 0,
+          happy: 0,
+          "very happy": 0,
+        };
+
+        Object.keys(feelingCounts).forEach((feeling) => {
+          percentages[feeling as FeelingType] =
+            (feelingCounts[feeling as FeelingType] / allEntries.length) * 100;
+        });
+
+        setFeelingPercentages(percentages);
+      }
+    } catch (error: any) {
+      console.error("Error calculating feeling percentages:", error.message);
+    }
+  };
 
   useEffect(() => {
     const getEntries = async () => {
@@ -53,11 +115,25 @@ export default function ProfileScreen() {
           return;
         }
 
+        // Fetch total count of entries
+        const { count, error: countError } = await supabase
+          .from("diary")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", userID);
+
+        if (countError) {
+          console.error("Error fetching entry count:", countError.message);
+          return;
+        }
+
+        setEntryCount(count || 0);
+
         const { data, error } = await supabase
           .from("diary")
           .select("*")
           .eq("user_id", userID)
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: false })
+          .limit(2);
 
         if (error) {
           console.error("Error fetching entries:", error.message);
@@ -68,12 +144,35 @@ export default function ProfileScreen() {
           console.log("Number of entries found:", data.length);
           setEntries(data as DiaryEntry[]);
         }
+
+        // Calculate feeling percentages
+        await calculateFeelingPercentages();
       } catch (error: any) {
         console.error("Error in getEntries:", error.message);
       }
     };
 
+    const fetchUserProfile = async () => {
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+        if (error) throw error;
+
+        if (user) {
+          setUserProfile({
+            avatar_url: user.user_metadata?.avatar_url || null,
+            full_name: user.user_metadata?.full_name || null,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
     getEntries();
+    fetchUserProfile();
   }, [userID]);
 
   const handleDeleteEntry = async (entryId: string) => {
@@ -86,7 +185,36 @@ export default function ProfileScreen() {
         return;
       }
 
-      setEntries(entries.filter((entry) => entry.id !== entryId));
+      // Fetch the latest 2 entries after deletion
+      const { data: updatedData, error: fetchError } = await supabase
+        .from("diary")
+        .select("*")
+        .eq("user_id", userID)
+        .order("created_at", { ascending: false })
+        .limit(2);
+
+      if (fetchError) {
+        console.error("Error fetching updated entries:", fetchError.message);
+        return;
+      }
+
+      if (updatedData) {
+        setEntries(updatedData as DiaryEntry[]);
+      }
+
+      // Update entry count after deletion
+      const { count, error: countError } = await supabase
+        .from("diary")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userID);
+
+      if (!countError) {
+        setEntryCount(count || 0);
+      }
+
+      // Recalculate feeling percentages
+      await calculateFeelingPercentages();
+
       setIsModalVisible(false);
       setSelectedEntry(null);
     } catch (error: any) {
@@ -151,10 +279,28 @@ export default function ProfileScreen() {
       }
 
       if (data) {
-        const updatedEntries = [...entries, data[0]].sort((a, b) => {
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
-        });
+        const updatedEntries = [...entries, data[0]]
+          .sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+          )
+          .slice(0, 2);
         setEntries(updatedEntries);
+
+        // Update entry count after creation
+        const { count, error: countError } = await supabase
+          .from("diary")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", userID);
+
+        if (!countError) {
+          setEntryCount(count || 0);
+        }
+
+        // Recalculate feeling percentages
+        await calculateFeelingPercentages();
+
         setIsNewEntryModalVisible(false);
         setNewEntry({
           title: "",
@@ -239,7 +385,7 @@ export default function ProfileScreen() {
                 multiline
               />
               <View style={styles.feelingSelector}>
-                {["very sad", "sad", "neutral", "happy", "very happy"].map(
+                {["sad", "very sad", "neutral", "happy", "very happy"].map(
                   (feeling) => (
                     <TouchableOpacity
                       key={feeling}
@@ -257,7 +403,7 @@ export default function ProfileScreen() {
                     >
                       <FeelingEmoticon
                         feeling={feeling as FeelingType}
-                        size={24}
+                        size={30}
                       />
                     </TouchableOpacity>
                   )
@@ -298,19 +444,38 @@ export default function ProfileScreen() {
       style={styles.container}
     >
       <View style={styles.header}>
+        <View style={styles.profileSection}>
+          {userProfile.avatar_url ? (
+            <Image
+              source={{ uri: userProfile.avatar_url }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <View style={styles.profileImagePlaceholder}>
+              <Text style={styles.profileImagePlaceholderText}>
+                {userProfile.full_name?.[0]?.toUpperCase() || "?"}
+              </Text>
+            </View>
+          )}
+          <Text style={styles.profileName}>
+            {userProfile.full_name || "Anonymous User"}
+          </Text>
+        </View>
         <LogoutButton />
       </View>
 
       <View style={styles.entriesContainer}>
+        <Text style={styles.entriesTitle}>Latest entries</Text>
         {entries.length === 0 ? (
-          <Text style={styles.noEntriesText}>Add your first entry</Text>
+          <View style={styles.noEntriesText}>
+            <Text style={styles.noEntriesText}>Add your first entry</Text>
+          </View>
         ) : (
-          <FlatList
-            data={entries}
-            keyExtractor={(item) => item.id}
-            renderItem={renderEntry}
-            scrollEnabled={true}
-          />
+          <View style={styles.entriesList}>
+            {entries.map((item) => (
+              <View key={item.id}>{renderEntry({ item })}</View>
+            ))}
+          </View>
         )}
       </View>
 
@@ -363,7 +528,19 @@ export default function ProfileScreen() {
         </View>
       </Modal>
       <View style={styles.statsContainer}>
-        <Text style={styles.statsText}>Stats and Analytics</Text>
+        <Text style={styles.statsText}>
+          Your feel for your {entryCount} entries
+        </Text>
+        <View style={styles.feelingStatsContainer}>
+          {Object.entries(feelingPercentages).map(([feeling, percentage]) => (
+            <View key={feeling} style={styles.feelingStatItem}>
+              <FeelingEmoticon feeling={feeling as FeelingType} size={30} />
+              <Text style={styles.feelingStatText}>
+                {percentage.toFixed(1)}%
+              </Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       <View style={styles.footer}>
@@ -386,25 +563,78 @@ const styles = StyleSheet.create({
   },
   header: {
     flex: 4,
-    backgroundColor: "red",
-    padding: 10,
+    padding: 15,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    // borderBottomWidth: 1,
+    // borderBottomColor: "#ddd",
+  },
+  profileSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  profileImage: {
+    width: 110,
+    height: 110,
+    borderRadius: 75,
+    marginRight: 15,
+    borderWidth: 2,
+    borderColor: "black",
+  },
+  profileImagePlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 75,
+    marginRight: 15,
+    backgroundColor: "#f0f0f0",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#FFD700",
+  },
+  profileImagePlaceholderText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#666",
+    fontFamily: "Pacifico",
+  },
+  profileName: {
+    fontSize: 28,
+    fontWeight: "bold",
+    fontFamily: "Pacifico",
+    color: "#333",
   },
   entriesContainer: {
     flex: 6,
-    backgroundColor: "darkorange",
     padding: 10,
+    borderWidth: 5,
+    borderColor: "black",
+    borderRadius: 10,
+    margin: 5,
+  },
+  entriesTitle: {
+    fontSize: 20,
+    fontFamily: "Pacifico",
+    color: "black",
+    marginBottom: 15,
+    textAlign: "center",
   },
   statsContainer: {
     flex: 3,
-    backgroundColor: "green",
     padding: 10,
-    justifyContent: "center",
-    alignItems: "center",
+    borderWidth: 5,
+    borderColor: "black",
+    borderRadius: 10,
+    margin: 5,
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
   },
   statsText: {
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: "Pacifico",
-    color: "white",
+    color: "black",
+    textAlign: "center",
   },
   footer: {
     flex: 2,
@@ -427,6 +657,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     marginBottom: 10,
+    // width: "90%",
+    height: 75,
+    // alignItems: "center",
+    justifyContent: "center",
   },
   entryHeader: {
     flexDirection: "row",
@@ -576,10 +810,32 @@ const styles = StyleSheet.create({
     fontFamily: "Pacifico",
   },
   noEntriesText: {
-    fontSize: 36,
+    fontSize: 28,
     fontFamily: "Pacifico",
     textAlign: "center",
     color: "black",
-    marginTop: 50,
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  entriesList: {
+    width: "100%",
+    flex: 1,
+  },
+  feelingStatsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    marginTop: 10,
+    paddingHorizontal: 10,
+  },
+  feelingStatItem: {
+    alignItems: "center",
+  },
+  feelingStatText: {
+    fontSize: 16,
+    fontFamily: "Pacifico",
+    color: "black",
+    marginTop: 5,
   },
 });

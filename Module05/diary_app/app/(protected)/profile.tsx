@@ -18,6 +18,7 @@ import { supabase } from "@/lib/supabase";
 import { FeelingEmoticon } from "@/components/FeelingEmoticon";
 import { useButtonAnimation } from "../../components/useButtonAnimation";
 import { useAuth } from "@/context/auth";
+import { useFocusEffect } from "@react-navigation/native";
 
 type FeelingType = "very sad" | "sad" | "neutral" | "happy" | "very happy";
 
@@ -117,73 +118,80 @@ export default function ProfileScreen() {
     }
   }, [userID]);
 
-  useEffect(() => {
-    const getEntries = async () => {
-      try {
-        if (!userID) {
-          console.error("No user ID available");
-          return;
-        }
-
-        // Fetch total count of entries
-        const { count, error: countError } = await supabase
-          .from("diary")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", userID);
-
-        if (countError) {
-          console.error("Error fetching entry count:", countError.message);
-          return;
-        }
-
-        setEntryCount(count || 0);
-
-        const { data, error } = await supabase
-          .from("diary")
-          .select("*")
-          .eq("user_id", userID)
-          .order("created_at", { ascending: false })
-          .limit(2);
-
-        if (error) {
-          console.error("Error fetching entries:", error.message);
-          return;
-        }
-
-        if (data) {
-          console.log("Number of entries found:", count);
-          setEntries(data as DiaryEntry[]);
-        }
-
-        // Calculate feeling percentages
-        await calculateFeelingPercentages();
-      } catch (error: any) {
-        console.error("Error in getEntries:", error.message);
+  const getEntries = useCallback(async () => {
+    try {
+      if (!userID) {
+        console.error("No user ID available");
+        return;
       }
-    };
 
-    const fetchUserProfile = async () => {
-      try {
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser();
-        if (error) throw error;
+      // Fetch total count of entries
+      const { count, error: countError } = await supabase
+        .from("diary")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userID);
 
-        if (user) {
-          setUserProfile({
-            avatar_url: user.user_metadata?.avatar_url || null,
-            full_name: user.user_metadata?.full_name || null,
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
+      if (countError) {
+        console.error("Error fetching entry count:", countError.message);
+        return;
       }
-    };
 
-    getEntries();
-    fetchUserProfile();
+      setEntryCount(count || 0);
+
+      const { data, error } = await supabase
+        .from("diary")
+        .select("*")
+        .eq("user_id", userID)
+        .order("created_at", { ascending: false })
+        .limit(2);
+
+      if (error) {
+        console.error("Error fetching entries:", error.message);
+        return;
+      }
+
+      if (data) {
+        console.log("Number of entries found:", count);
+        setEntries(data as DiaryEntry[]);
+      }
+
+      // Calculate feeling percentages
+      await calculateFeelingPercentages();
+    } catch (error: any) {
+      console.error("Error in getEntries:", error.message);
+    }
   }, [userID, calculateFeelingPercentages]);
+
+  // Use useFocusEffect to refresh entries when the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      getEntries();
+    }, [getEntries])
+  );
+
+  const fetchUserProfile = useCallback(async () => {
+    try {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+      if (error) throw error;
+
+      if (user) {
+        setUserProfile({
+          avatar_url: user.user_metadata?.avatar_url || null,
+          full_name: user.user_metadata?.full_name || null,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  }, []);
+
+  // Initial fetch of user profile
+  useEffect(() => {
+    fetchUserProfile();
+  }, [fetchUserProfile]);
 
   const handleDeleteEntry = async (entryId: string) => {
     try {

@@ -390,12 +390,12 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   entriesContainer: {
-    flex: 5,
+    flex: 6,
     backgroundColor: "darkorange",
     padding: 10,
   },
   statsContainer: {
-    flex: 5,
+    flex: 3,
     backgroundColor: "green",
     padding: 10,
     justifyContent: "center",

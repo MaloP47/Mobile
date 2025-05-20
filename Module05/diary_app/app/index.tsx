@@ -1,7 +1,6 @@
-import React, { useContext } from "react";
+import React from "react";
 import { View, Text, StyleSheet, ImageBackground} from "react-native";
 import { useButtonAnimation } from "../components/useButtonAnimation";
-import { AuthContext } from "@/context/auth";
 import { router } from "expo-router";
 
 

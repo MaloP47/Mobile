@@ -301,20 +301,18 @@ export default function ProfileScreen() {
         <LogoutButton />
       </View>
 
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.entriesContainer}>
-          {entries.length === 0 ? (
-            <Text style={styles.noEntriesText}>Add your first entry</Text>
-          ) : (
-            <FlatList
-              data={entries}
-              keyExtractor={(item) => item.id}
-              renderItem={renderEntry}
-              scrollEnabled={false}
-            />
-          )}
-        </View>
-      </ScrollView>
+      <View style={styles.entriesContainer}>
+        {entries.length === 0 ? (
+          <Text style={styles.noEntriesText}>Add your first entry</Text>
+        ) : (
+          <FlatList
+            data={entries}
+            keyExtractor={(item) => item.id}
+            renderItem={renderEntry}
+            scrollEnabled={true}
+          />
+        )}
+      </View>
 
       <Modal
         animationType="slide"
@@ -364,6 +362,9 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+      <View style={styles.statsContainer}>
+        <Text style={styles.statsText}>Stats and Analytics</Text>
+      </View>
 
       <View style={styles.footer}>
         <AnimatedTouchableOpacity
@@ -381,21 +382,45 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-    padding: 20,
-    // backgroundColor: "red",
+    flexDirection: "column",
   },
   header: {
-    // backgroundColor: "red",
-    height: 65,
+    flex: 4,
+    backgroundColor: "red",
+    padding: 10,
+  },
+  entriesContainer: {
+    flex: 5,
+    backgroundColor: "darkorange",
+    padding: 10,
+  },
+  statsContainer: {
+    flex: 5,
+    backgroundColor: "green",
+    padding: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  statsText: {
+    fontSize: 24,
+    fontFamily: "Pacifico",
+    color: "white",
+  },
+  footer: {
+    flex: 2,
+    // backgroundColor: "yellow",
+    padding: 5,
+    // justifyContent: "center",
+    // alignItems: "center",
+  },
+  scrollView: {
+    flex: 3,
+    padding: 10,
+    paddingBottom: 100,
+    backgroundColor: "pink",
   },
   headerText: {
     fontSize: 24,
-  },
-  entriesContainer: {
-    gap: 15,
   },
   entryCard: {
     backgroundColor: "rgba(255, 255, 255, 0.9)",
@@ -423,11 +448,6 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 10,
   },
-  footer: {
-    // backgroundColor: "red",
-    height: 100,
-    marginBottom: 30,
-  },
   button: {
     backgroundColor: "#FFD700",
     borderRadius: 25,
@@ -440,7 +460,7 @@ const styles = StyleSheet.create({
     elevation: 25,
     alignItems: "center",
     justifyContent: "center",
-    margin: 15,
+    margin: 10,
   },
   buttonTxt: {
     fontSize: 24,
